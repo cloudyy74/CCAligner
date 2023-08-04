@@ -2,7 +2,6 @@ import re
 from tree_sitter import Language, Parser
 
 
-
 class Obfuscator:
     def __init__(self, file_loc, file_dest, language):
         self.language = language
@@ -58,3 +57,5 @@ class Obfuscator:
         with open(self.file_dest+'/' + file_name, 'w') as nf:
             new_content = ''.join(self.new_lines)
             nf.write(new_content)
+
+

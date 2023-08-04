@@ -5,7 +5,7 @@ import glob
 import os
 from tree_sitter import Language, Parser
 from lexical_analysis.obfuscation import Obfuscator
-
+from lexical_analysis.comment_remover import CommentRemover
 
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
@@ -21,29 +21,90 @@ Language.build_library(
 )
 
 
-
 class PrettyPrinter(object):
-    def __init__(self, codebase_loc: str, pretty_loc: str, language: str):
-        self.language = language
-        self.lang_ext = None
+    def __init__(self, codebase_loc: str, pretty_loc: str, language):
+        self._language = language
+        self._lang_ext = None
 
-        if self.language == 'python':
-            self.lang_ext = '.py'
-        elif self.language == 'java':
-            self.lang_ext = '.java'
         self._codebase_loc = codebase_loc
         self._pretty_codebase_loc = pretty_loc + self._codebase_loc.split('/')[-1]
+        os.mkdir(pretty_loc)
         os.mkdir(self._pretty_codebase_loc)
-        self._without_type1_changes_loc = self._pretty_codebase_loc + "/type1_normalized"
-        self._pep8_loc = self._pretty_codebase_loc + "/pep8"
+        print("init from base_class")
         self._codeblocks_loc = self._pretty_codebase_loc + "/codeblocks"
         self._obfuscated_loc = self._pretty_codebase_loc + "/obfuscated"
+        self._without_type1_changes_loc = self._pretty_codebase_loc + "/without_type1_changes"
         self.tree = None  # will contain new tree-sitter tree for every file in codebase
-        self.cursor = None  # will contain tree's cursor
-
 
     @staticmethod
-    def remove_type1_changes_file(file_loc, new_loc):
+    def copy_code_fragment(file_loc: str, file_dest: str, start_line, end_line):
+        """
+        we will pass only lines start and end, because after normalization codeblock can not
+        end or start in the middle of the line
+        :param file_loc:
+        :param file_dest:
+        :param start_line:
+        :param end_line:
+        :return:
+        """
+        with open(file_loc, 'r') as source_file:
+            lines = source_file.readlines()
+        code_fragment_lines = lines[start_line: end_line + 1]
+        number_of_indents = len(code_fragment_lines[0]) - len(code_fragment_lines[0].lstrip())
+        code_fragment_lines = [line[number_of_indents:] for line in code_fragment_lines]
+        extracted_code = ''.join(code_fragment_lines)
+        with open(file_dest, 'w') as destination_file:
+            destination_file.write(extracted_code)
+
+    def finding_blocks(self, node, storing_loc, file_loc):
+        if len(node.children) == 0:
+            return
+        if node.type == 'block':
+            start_line = node.start_point[0]
+            end_line = node.end_point[0]
+            codeblock_file_name = f'{storing_loc}/{start_line + 1}_{end_line + 1}{self._lang_ext}'
+            self.copy_code_fragment(file_loc, codeblock_file_name, start_line, end_line)
+        for child in node.children:
+            self.finding_blocks(child, storing_loc, file_loc)
+
+    def split_to_codeblocks_file(self, file_loc, new_loc):
+        parser = Parser()
+        language = Language('../build/my-languages.so', self._language)
+        parser.set_language(language)
+        with open(file_loc, "rb") as f:
+            content = f.read()
+        self.tree = parser.parse(content)
+        storing_loc = new_loc + '/' + file_loc.split('/')[-1][:-1]
+        os.mkdir(storing_loc)
+        root_node = self.tree.root_node
+        self.finding_blocks(root_node, storing_loc, file_loc)
+
+    def split_to_codeblocks_codebase(self):
+        os.mkdir(self._codeblocks_loc)
+        for file in glob.glob(self._without_type1_changes_loc + "/**/*" + self._lang_ext, recursive=True):
+            self.split_to_codeblocks_file(file, self._codeblocks_loc)
+        return True
+
+    def obfuscate_codebase(self):
+        os.mkdir(self._obfuscated_loc)
+        for file in glob.glob(self._codeblocks_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self._obfuscated_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            ob = Obfuscator(file, same_dir, self._language)
+            ob.obfuscate()
+        return True
+
+
+class PrettyPrinterPy(PrettyPrinter):
+    def __init__(self, codebase_loc: str, pretty_loc: str, language: str):
+        super().__init__(codebase_loc, pretty_loc, language)
+        self._lang_ext = '.py'
+
+        self._pep8_loc = self._pretty_codebase_loc + "/pep8"
+
+    @staticmethod
+    def remove_type1_changes_file_py(file_loc, new_loc):
         new_file_name = new_loc + '/' + file_loc.split('/')[-1]  # can create collision
         new_file_content = list()
         prev_token_type = tokenize.INDENT
@@ -82,10 +143,10 @@ class PrettyPrinter(object):
         nf.write(''.join(new_file_content))
         nf.close()
 
-    def remove_type1_changes_in_codebase(self):
+    def remove_type1_changes_in_codebase_py(self):
         os.mkdir(self._without_type1_changes_loc)
-        for file in glob.glob(self._pep8_loc + "/**/*" + self.lang_ext, recursive=True):
-            self.remove_type1_changes_file(file, self._without_type1_changes_loc)
+        for file in glob.glob(self._pep8_loc + "/**/*" + self._lang_ext, recursive=True):
+            self.remove_type1_changes_file_py(file, self._without_type1_changes_loc)
         return True
 
     def to_pep8_and_copy_codebase(self) -> bool:
@@ -100,73 +161,44 @@ class PrettyPrinter(object):
         status = run(command_to_pep8, shell=True, capture_output=True, text=True).returncode
         return status == 0
 
-    @staticmethod
-    def copy_code_fragment(file_loc: str, file_dest: str, start_line, end_line):
-        """
-        we will pass only starting lines, because after normalization codeblock can not
-        end or start in the middle of the line
-        :param file_loc:
-        :param file_dest:
-        :param start_line:
-        :param end_line:
-        :return:
-        """
-        with open(file_loc, 'r') as source_file:
-            lines = source_file.readlines()
-        code_fragment_lines = lines[start_line: end_line + 1]
-        number_of_indents = len(code_fragment_lines[0]) - len(code_fragment_lines[0].lstrip())
-        code_fragment_lines = [line[number_of_indents:] for line in code_fragment_lines]
-        extracted_code = ''.join(code_fragment_lines)
-        with open(file_dest, 'w') as destination_file:
-            destination_file.write(extracted_code)
-
-    def finding_blocks(self, node, storing_loc, file_loc):
-        if len(node.children) == 0:
-            return
-        if node.type == 'block':
-            start_line = node.start_point[0]
-            end_line = node.end_point[0]
-            codeblock_file_name = f'{storing_loc}/{start_line + 1}_{end_line + 1}{self.lang_ext}'
-            self.copy_code_fragment(file_loc, codeblock_file_name, start_line, end_line)
-        for child in node.children:
-            self.finding_blocks(child, storing_loc, file_loc)
-
-    def split_to_codeblocks_file(self, file_loc, new_loc):
-        parser = Parser()
-        language = Language('../build/my-languages.so', self.language)
-        parser.set_language(language)
-        with open(file_loc, "rb") as f:
-            content = f.read()
-        self.tree = parser.parse(content)
-        storing_loc = new_loc + '/' + file_loc.split('/')[-1][:-1]
-        os.mkdir(storing_loc)
-        root_node = self.tree.root_node
-        self.finding_blocks(root_node, storing_loc, file_loc)
-
-    def split_to_codeblocks_codebase(self):
-        os.mkdir(self._codeblocks_loc)
-        for file in glob.glob(self._without_type1_changes_loc + "/**/*" + self.lang_ext, recursive=True):
-            self.split_to_codeblocks_file(file, self._codeblocks_loc)
-        return True
-
-    def obfuscate_codebase(self):
-        os.mkdir(self._obfuscated_loc)
-        for file in glob.glob(self._codeblocks_loc + "/**/*" + self.lang_ext, recursive=True):
-            same_dir = self._obfuscated_loc + '/' + file.split('/')[-2]
-            if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
-            ob = Obfuscator(file, same_dir, self.language)
-            ob.obfuscate()
-        return True
-
     def pretty_print(self):
         if self.to_pep8_and_copy_codebase():
             print("Brought into proper style")
-        if self.remove_type1_changes_in_codebase():
+        if self.remove_type1_changes_in_codebase_py():
             print("Removed type 1 changes")
         if self.split_to_codeblocks_codebase():
             print("Split to codeblocks")
         if self.obfuscate_codebase():
             print("Obfuscated")
 
+    """def eliminate_spaces_file_java(self, file_loc, file_dest):
+        new_file_name = file_loc.split('/')[-1]
+        with open(file_loc, "r") as f:
+            content = f.readlines()
+
+        with open(file_dest + '/' + new_file_name, 'w') as f:
+            for line in content:
+                if line.strip() != '':
+                    f.write(' '.join(line.split()) + '\n')"""
+
+
+class PrettyPrinterJava(PrettyPrinter):
+    def __init__(self, codebase_loc: str, pretty_loc: str, language):
+        super().__init__(codebase_loc, pretty_loc, language)
+        self._lang_ext = ".java"
+        self._without_comments_loc = self._pretty_codebase_loc + '/without_comments'
+
+    def remove_comments_codebase(self):
+        os.mkdir(self._without_comments_loc)
+        for file in glob.glob(self._codebase_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self._without_comments_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            cr = CommentRemover(file, same_dir, self._language)
+            cr.remove_comments()
+        return True
+
+    def pretty_print(self):
+        if self.remove_comments_codebase():
+            print("Removed comments")
 
