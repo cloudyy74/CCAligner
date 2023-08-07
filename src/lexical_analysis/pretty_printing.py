@@ -9,6 +9,8 @@ from lexical_analysis.comment_remover import CommentRemover
 
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
+JAVA_STYLER_LOC = 'src/styling/google-java-format-1.17.0-all-deps.jar'
+
 Language.build_library(
   # Store the library in the `build` directory
   '../build/my-languages.so',
@@ -33,8 +35,9 @@ class PrettyPrinter(object):
         print("init from base_class")
         self._codeblocks_loc = self._pretty_codebase_loc + "/codeblocks"
         self._obfuscated_loc = self._pretty_codebase_loc + "/obfuscated"
-        self._without_type1_changes_loc = self._pretty_codebase_loc + "/without_type1_changes"
+        self._without_type1_changes_loc = self._pretty_codebase_loc + "/without_comments"
         self.tree = None  # will contain new tree-sitter tree for every file in codebase
+        self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
 
     @staticmethod
     def copy_code_fragment(file_loc: str, file_dest: str, start_line, end_line):
@@ -87,13 +90,24 @@ class PrettyPrinter(object):
 
     def obfuscate_codebase(self):
         os.mkdir(self._obfuscated_loc)
-        for file in glob.glob(self._codeblocks_loc + "/**/*" + self._lang_ext, recursive=True):
+        for file in glob.glob(self._styled_loc + "/**/*" + self._lang_ext, recursive=True):
             same_dir = self._obfuscated_loc + '/' + file.split('/')[-2]
             if not os.path.exists(same_dir):
                 os.mkdir(same_dir)
             ob = Obfuscator(file, same_dir, self._language)
             ob.obfuscate()
         return True
+
+    @staticmethod
+    def glue_gaps_file(file_loc, file_dest):
+        new_file_name = file_loc.split('/')[-1]
+        with open(file_loc, "r") as f:
+            content = f.readlines()
+
+        with open(file_dest + '/' + new_file_name, 'w') as f:
+            for line in content:
+                if line.strip() != '':
+                    f.write(' '.join(line.split()) + ' ')
 
 
 class PrettyPrinterPy(PrettyPrinter):
@@ -171,15 +185,7 @@ class PrettyPrinterPy(PrettyPrinter):
         if self.obfuscate_codebase():
             print("Obfuscated")
 
-    """def eliminate_spaces_file_java(self, file_loc, file_dest):
-        new_file_name = file_loc.split('/')[-1]
-        with open(file_loc, "r") as f:
-            content = f.readlines()
 
-        with open(file_dest + '/' + new_file_name, 'w') as f:
-            for line in content:
-                if line.strip() != '':
-                    f.write(' '.join(line.split()) + '\n')"""
 
 
 class PrettyPrinterJava(PrettyPrinter):
@@ -187,6 +193,8 @@ class PrettyPrinterJava(PrettyPrinter):
         super().__init__(codebase_loc, pretty_loc, language)
         self._lang_ext = ".java"
         self._without_comments_loc = self._pretty_codebase_loc + '/without_comments'
+        self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
+        self._one_whitespace_loc = self._pretty_codebase_loc + '/one_whitespace'
 
     def remove_comments_codebase(self):
         os.mkdir(self._without_comments_loc)
@@ -198,7 +206,32 @@ class PrettyPrinterJava(PrettyPrinter):
             cr.remove_comments()
         return True
 
+    def style_codebase(self):
+        os.mkdir(self._styled_loc)
+        for file in glob.glob(self._codeblocks_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self._styled_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            new_file_name = same_dir + '/' + file.split('/')[-1]
+            command_to_style = f'java -jar {JAVA_STYLER_LOC} {file} | cat > {new_file_name}'
+            status = run(command_to_style, shell=True, capture_output=True, text=True).returncode
+        return True
+
+    def glue_gaps_codebase(self):
+        os.mkdir(self._one_whitespace_loc)
+        for file in glob.glob(self._codeblocks_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self._one_whitespace_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            self.glue_gaps_file(file, same_dir)
+        return True
+
     def pretty_print(self):
         if self.remove_comments_codebase():
             print("Removed comments")
-
+        if self.split_to_codeblocks_codebase():
+            print("Splitted to codeblocks")
+        if self.glue_gaps_codebase():
+            print("Styled")
+        # if self.obfuscate_codebase():
+          #  print("Obfuscated")

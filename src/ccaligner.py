@@ -27,7 +27,7 @@ elif (language == 'java'):
 pp.pretty_print()
 
 
-"""final_dir = pretty_loc + codebase_loc.split('/')[-1] + '/' + 'obfuscated'
+final_dir = pretty_loc + codebase_loc.split('/')[-1] + '/' + 'obfuscated'
 
 cca = CCalignerAlgorithm(final_dir, lang_ext, 3, 0)
 pairs = cca.run_algo()
@@ -36,4 +36,4 @@ for file1, file2 in pairs:
     file_name2 = file2.split('/')[-2]
     fragment1 = file1.split('/')[-1][:-3]
     fragment2 = file2.split('/')[-1][:-3]
-    print(f"{file_name1} and {file_name2} contain codeclone in lines {fragment1} and {fragment2} respectively")"""
+    print(f"{file_name1} and {file_name2} contain codeclone in lines {fragment1} and {fragment2} respectively")
