@@ -6,6 +6,8 @@ import os
 from tree_sitter import Language, Parser
 from lexical_analysis.obfuscation import Obfuscator
 from lexical_analysis.comment_remover import CommentRemover
+from lexical_analysis.space_inserter_between_tokens import SpaceInserter
+from lexical_analysis.statements_separator import NewlineInserter
 
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
@@ -195,6 +197,9 @@ class PrettyPrinterJava(PrettyPrinter):
         self._without_comments_loc = self._pretty_codebase_loc + '/without_comments'
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
         self._one_whitespace_loc = self._pretty_codebase_loc + '/one_whitespace'
+        self._separated_tokens_loc = self._pretty_codebase_loc + '/separated_tokens'
+        self._sep_and_glued_loc = self._pretty_codebase_loc + '/sep_and_glued'
+        self._pretttty_loc = self._pretty_codebase_loc + '/pretty'
 
     def remove_comments_codebase(self):
         os.mkdir(self._without_comments_loc)
@@ -217,21 +222,47 @@ class PrettyPrinterJava(PrettyPrinter):
             status = run(command_to_style, shell=True, capture_output=True, text=True).returncode
         return True
 
-    def glue_gaps_codebase(self):
-        os.mkdir(self._one_whitespace_loc)
-        for file in glob.glob(self._codeblocks_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._one_whitespace_loc + '/' + file.split('/')[-2]
+    def glue_gaps_codebase(self, from_loc, dest_loc):
+        if not os.path.exists(dest_loc):
+            os.mkdir(dest_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = dest_loc + '/' + file.split('/')[-2]
             if not os.path.exists(same_dir):
                 os.mkdir(same_dir)
             self.glue_gaps_file(file, same_dir)
         return True
+
+    def insert_whitespaces_codebase(self):
+        os.mkdir(self._separated_tokens_loc)
+        for file in glob.glob(self._one_whitespace_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self._separated_tokens_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            si = SpaceInserter(file, same_dir, self._language)
+            si.insert_spaces()
+        return True
+
+    def insert_new_lines_codebase(self):
+        os.mkdir(self._pretttty_loc)
+        for file in glob.glob(self._sep_and_glued_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self._pretttty_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            sp = NewlineInserter(file, same_dir, self._language)
+            sp.insert_new_lines()
+        return True
+
 
     def pretty_print(self):
         if self.remove_comments_codebase():
             print("Removed comments")
         if self.split_to_codeblocks_codebase():
             print("Splitted to codeblocks")
-        if self.glue_gaps_codebase():
+        if self.glue_gaps_codebase(self._codeblocks_loc, self._one_whitespace_loc):
             print("Styled")
-        # if self.obfuscate_codebase():
-          #  print("Obfuscated")
+        if self.insert_whitespaces_codebase():
+            print("Tokens are separated")
+        if self.glue_gaps_codebase(self._separated_tokens_loc, self._sep_and_glued_loc):
+            print("Styled again")
+        if self.insert_new_lines_codebase():
+            print("statements are separated")
