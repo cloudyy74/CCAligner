@@ -41,34 +41,41 @@ class PrettyPrinter(object):
         self.tree = None  # will contain new tree-sitter tree for every file in codebase
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
 
-    @staticmethod
-    def copy_code_fragment(file_loc: str, file_dest: str, start_line, end_line):
+    def copy_code_fragment(self, file_loc: str, storing_loc: str, start, end):
         """
-        we will pass only lines start and end, because after normalization codeblock can not
-        end or start in the middle of the line
+        
         :param file_loc:
         :param file_dest:
         :param start_line:
         :param end_line:
         :return:
         """
+        start_line, start_col = start
+        end_line, end_col = end
         with open(file_loc, 'r') as source_file:
             lines = source_file.readlines()
         code_fragment_lines = lines[start_line: end_line + 1]
-        number_of_indents = len(code_fragment_lines[0]) - len(code_fragment_lines[0].lstrip())
-        code_fragment_lines = [line[number_of_indents:] for line in code_fragment_lines]
+        code_fragment_lines[end_line - start_line] = lines[end_line][:end_col - 1]
+        code_fragment_lines[0] = code_fragment_lines[0][start_col + 1:]
         extracted_code = ''.join(code_fragment_lines)
-        with open(file_dest, 'w') as destination_file:
+        true_start_line = start_line + 1
+        true_end_line = end_line + 1
+        if code_fragment_lines[0].strip() == '':
+            true_start_line += 1
+        if code_fragment_lines[end_line - start_line].strip() == '':
+            true_end_line -= 1
+        codeblock_file_name = f'{storing_loc}/{true_start_line}_{true_end_line}{self._lang_ext}'
+        with open(codeblock_file_name, 'w') as destination_file:
             destination_file.write(extracted_code)
 
     def finding_blocks(self, node, storing_loc, file_loc):
         if len(node.children) == 0:
             return
         if node.type == 'block':
-            start_line = node.start_point[0]
-            end_line = node.end_point[0]
-            codeblock_file_name = f'{storing_loc}/{start_line + 1}_{end_line + 1}{self._lang_ext}'
-            self.copy_code_fragment(file_loc, codeblock_file_name, start_line, end_line)
+            start = node.start_point
+            end = node.end_point
+
+            self.copy_code_fragment(file_loc, storing_loc, start, end)
         for child in node.children:
             self.finding_blocks(child, storing_loc, file_loc)
 
@@ -79,7 +86,7 @@ class PrettyPrinter(object):
         with open(file_loc, "rb") as f:
             content = f.read()
         self.tree = parser.parse(content)
-        storing_loc = new_loc + '/' + file_loc.split('/')[-1][:-1]
+        storing_loc = new_loc + '/' + file_loc.split('/')[-1][:-5]
         os.mkdir(storing_loc)
         root_node = self.tree.root_node
         self.finding_blocks(root_node, storing_loc, file_loc)
@@ -87,7 +94,10 @@ class PrettyPrinter(object):
     def split_to_codeblocks_codebase(self):
         os.mkdir(self._codeblocks_loc)
         for file in glob.glob(self._without_type1_changes_loc + "/**/*" + self._lang_ext, recursive=True):
-            self.split_to_codeblocks_file(file, self._codeblocks_loc)
+            same_dir = self._codeblocks_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            self.split_to_codeblocks_file(file, same_dir)
         return True
 
     def obfuscate_codebase(self):
@@ -188,8 +198,6 @@ class PrettyPrinterPy(PrettyPrinter):
             print("Obfuscated")
 
 
-
-
 class PrettyPrinterJava(PrettyPrinter):
     def __init__(self, codebase_loc: str, pretty_loc: str, language):
         super().__init__(codebase_loc, pretty_loc, language)
@@ -211,43 +219,36 @@ class PrettyPrinterJava(PrettyPrinter):
             cr.remove_comments()
         return True
 
-    def style_codebase(self):
-        os.mkdir(self._styled_loc)
-        for file in glob.glob(self._codeblocks_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._styled_loc + '/' + file.split('/')[-2]
-            if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
-            new_file_name = same_dir + '/' + file.split('/')[-1]
-            command_to_style = f'java -jar {JAVA_STYLER_LOC} {file} | cat > {new_file_name}'
-            status = run(command_to_style, shell=True, capture_output=True, text=True).returncode
-        return True
+    @staticmethod
+    def handling_file_storage(file_name, dest_loc):
+        same_dir_par = dest_loc + '/' + file_name.split('/')[-3]
+        if not os.path.exists(same_dir_par):
+            os.mkdir(same_dir_par)
+        same_dir = same_dir_par + '/' + file_name.split('/')[-2]
+        if not os.path.exists(same_dir):
+            os.mkdir(same_dir)
+        return same_dir
 
     def glue_gaps_codebase(self, from_loc, dest_loc):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = dest_loc + '/' + file.split('/')[-2]
-            if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
+            same_dir = self.handling_file_storage(file, dest_loc)
             self.glue_gaps_file(file, same_dir)
         return True
 
-    def insert_whitespaces_codebase(self):
-        os.mkdir(self._separated_tokens_loc)
-        for file in glob.glob(self._one_whitespace_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._separated_tokens_loc + '/' + file.split('/')[-2]
-            if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
+    def insert_whitespaces_codebase(self, from_loc, dest_loc):
+        os.mkdir(dest_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self.handling_file_storage(file, dest_loc)
             si = SpaceInserter(file, same_dir, self._language)
             si.insert_spaces()
         return True
 
-    def insert_new_lines_codebase(self):
-        os.mkdir(self._pretttty_loc)
-        for file in glob.glob(self._sep_and_glued_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._pretttty_loc + '/' + file.split('/')[-2]
-            if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
+    def insert_new_lines_codebase(self, from_loc, dest_loc):
+        os.mkdir(dest_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self.handling_file_storage(file, dest_loc)
             sp = NewlineInserter(file, same_dir, self._language)
             sp.insert_new_lines()
         return True
@@ -260,9 +261,11 @@ class PrettyPrinterJava(PrettyPrinter):
             print("Splitted to codeblocks")
         if self.glue_gaps_codebase(self._codeblocks_loc, self._one_whitespace_loc):
             print("Styled")
-        if self.insert_whitespaces_codebase():
+        if self.insert_whitespaces_codebase(self._one_whitespace_loc, self._separated_tokens_loc):
             print("Tokens are separated")
         if self.glue_gaps_codebase(self._separated_tokens_loc, self._sep_and_glued_loc):
             print("Styled again")
-        if self.insert_new_lines_codebase():
+        if self.insert_new_lines_codebase(self._sep_and_glued_loc, self._pretttty_loc):
             print("statements are separated")
+
+

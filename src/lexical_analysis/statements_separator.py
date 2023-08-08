@@ -18,14 +18,21 @@ class NewlineInserter:
         if node is None:
             return
         if node.child_by_field_name('body') is not None:
-            self.bfs(node.child_by_field_name('body'))
-            body_start = node.child_by_field_name('body').start_point[1]
-            self.statements_ends.append(body_start + 2)
+            body = node.child_by_field_name('body')
+            if body.type != 'block':
+                self.statements_ends.append(body.start_point[1])
+            self.bfs(body)
             return
-        if node.child_by_field_name('sequence') is not None:
-            self.bfs(node.child_by_field_name('sequence'))
-            sequence = node.child_by_field_name('sequence').start_point[1]
-            self.statements_ends.append(sequence + 2)
+        if node.child_by_field_name('consequence') is not None:  # handling if_statement
+            consequence = node.child_by_field_name('consequence')
+            if consequence.type != 'block':
+                self.statements_ends.append(consequence.start_point[1])
+            self.bfs(consequence)
+            if node.child_by_field_name('alternative') is not None:
+                self.statements_ends.append(consequence.end_point[1] + 1)
+                alternative = node.child_by_field_name('alternative')
+                self.statements_ends.append(alternative.start_point[1])
+                self.bfs(alternative)
             return
         if node.type == 'block':
             self.statements_ends.append(node.start_point[1] + 2)
@@ -38,7 +45,6 @@ class NewlineInserter:
                 self.bfs(child)
             if child.type == 'block':
                 self.bfs(child)
-
 
     def insert_new_lines(self):
         parser = Parser()
@@ -61,3 +67,5 @@ class NewlineInserter:
         with open(self.file_dest + '/' + file_name, 'w') as nf:
             new_content = ''.join(self.new_lines)
             nf.write(new_content)
+
+
