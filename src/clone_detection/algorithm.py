@@ -1,8 +1,12 @@
 import glob
+from typing import List, Any
+
 import mmh3
 
 
 class CCalignerAlgorithm:
+    clone_pair: List[Any]
+
     def __init__(self, codeblocks_dir, lang_ext, window_size=3, edit_distance=1, theta=0.7):
         self.dir = codeblocks_dir
         self.q = window_size

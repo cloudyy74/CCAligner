@@ -14,10 +14,16 @@ class NewlineInserter:
         self.statements_ends = list()
 
     def bfs(self, node):
+        """
+        это поиск в ширину. когда мы переходим в очередную вершину, считаем, что все ее предки расположены как надо.
+        отдельно обрабатываются:
+        :param node:
+        :return:
+        """
 
         if node is None:
             return
-        if node.child_by_field_name('body') is not None:
+        if node.type.endswith('for_statement'):
             body = node.child_by_field_name('body')
             if body.type != 'block':
                 self.statements_ends.append(body.start_point[1])
@@ -40,7 +46,7 @@ class NewlineInserter:
             _, st_end = child.end_point
             _, st_start = child.start_point
 
-            if child.type.endswith('_statement') or child.type.endswith('_declaration'):
+            if child.type.endswith('_statement') or child.type.endswith('_declaration') or child.type.endswith('clause'):
                 self.statements_ends.append(st_end + 1)
                 self.bfs(child)
             if child.type == 'block':

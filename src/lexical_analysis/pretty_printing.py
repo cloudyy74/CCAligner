@@ -41,6 +41,16 @@ class PrettyPrinter(object):
         self.tree = None  # will contain new tree-sitter tree for every file in codebase
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
 
+    @staticmethod
+    def handling_file_storage(file_name, dest_loc):
+        same_dir_par = dest_loc + '/' + file_name.split('/')[-3]
+        if not os.path.exists(same_dir_par):
+            os.mkdir(same_dir_par)
+        same_dir = same_dir_par + '/' + file_name.split('/')[-2]
+        if not os.path.exists(same_dir):
+            os.mkdir(same_dir)
+        return same_dir
+
     def copy_code_fragment(self, file_loc: str, storing_loc: str, start, end):
         """
         
@@ -100,12 +110,10 @@ class PrettyPrinter(object):
             self.split_to_codeblocks_file(file, same_dir)
         return True
 
-    def obfuscate_codebase(self):
-        os.mkdir(self._obfuscated_loc)
-        for file in glob.glob(self._styled_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._obfuscated_loc + '/' + file.split('/')[-2]
-            if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
+    def obfuscate_codebase(self, from_loc, dest_loc):
+        os.mkdir(dest_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self.handling_file_storage(file, dest_loc)
             ob = Obfuscator(file, same_dir, self._language)
             ob.obfuscate()
         return True
@@ -219,15 +227,6 @@ class PrettyPrinterJava(PrettyPrinter):
             cr.remove_comments()
         return True
 
-    @staticmethod
-    def handling_file_storage(file_name, dest_loc):
-        same_dir_par = dest_loc + '/' + file_name.split('/')[-3]
-        if not os.path.exists(same_dir_par):
-            os.mkdir(same_dir_par)
-        same_dir = same_dir_par + '/' + file_name.split('/')[-2]
-        if not os.path.exists(same_dir):
-            os.mkdir(same_dir)
-        return same_dir
 
     def glue_gaps_codebase(self, from_loc, dest_loc):
         if not os.path.exists(dest_loc):
@@ -267,5 +266,7 @@ class PrettyPrinterJava(PrettyPrinter):
             print("Styled again")
         if self.insert_new_lines_codebase(self._sep_and_glued_loc, self._pretttty_loc):
             print("statements are separated")
+        if self.obfuscate_codebase(self._pretttty_loc, self._obfuscated_loc):
+            print("Obfuscated")
 
 
