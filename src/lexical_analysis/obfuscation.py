@@ -52,7 +52,7 @@ class Obfuscator:
         root_node = self.tree.root_node
         self.dfs(root_node)
         file_name = self.file_loc.split('/')[-1]
-        with open(self.file_dest+'/' + file_name, 'w') as nf:
+        with open(self.file_dest + '/' + file_name, 'w') as nf:
             new_content = ''.join(self.new_lines)
             nf.write(new_content)
 

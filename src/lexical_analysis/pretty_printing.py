@@ -3,11 +3,14 @@ from shutil import copytree
 import tokenize
 import glob
 import os
+import time
 from tree_sitter import Language, Parser
 from lexical_analysis.obfuscation import Obfuscator
 from lexical_analysis.comment_remover import CommentRemover
 from lexical_analysis.space_inserter_between_tokens import SpaceInserter
 from lexical_analysis.statements_separator import NewlineInserter
+
+
 
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
@@ -206,6 +209,11 @@ class PrettyPrinterPy(PrettyPrinter):
             print("Obfuscated")
 
 
+def print_with_time(message):
+    print(message)
+    print(time.ctime(time.time()))
+
+
 class PrettyPrinterJava(PrettyPrinter):
     def __init__(self, codebase_loc: str, pretty_loc: str, language):
         super().__init__(codebase_loc, pretty_loc, language)
@@ -254,18 +262,18 @@ class PrettyPrinterJava(PrettyPrinter):
 
     def pretty_print(self):
         if self.remove_comments_codebase():
-            print("Removed comments")
+            print_with_time("Removed comments")
         if self.split_to_codeblocks_codebase():
-            print("Splitted to codeblocks")
+            print_with_time("Splitted to codeblocks")
         if self.glue_gaps_codebase(self._codeblocks_loc, self._one_whitespace_loc):
-            print("Styled")
+            print_with_time("Styled")
         if self.insert_whitespaces_codebase(self._one_whitespace_loc, self._separated_tokens_loc):
-            print("Tokens are separated")
+            print_with_time("Tokens are separated")
         if self.glue_gaps_codebase(self._separated_tokens_loc, self._sep_and_glued_loc):
-            print("Styled again")
+            print_with_time("Styled again")
         if self.insert_new_lines_codebase(self._sep_and_glued_loc, self._pretttty_loc):
-            print("statements are separated")
+            print_with_time("Statements are separated")
         if self.obfuscate_codebase(self._pretttty_loc, self._obfuscated_loc):
-            print("Obfuscated")
+            print_with_time("Obfuscated")
 
 
