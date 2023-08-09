@@ -1,4 +1,3 @@
-import re
 from tree_sitter import Language, Parser
 
 
