@@ -19,21 +19,20 @@ class Obfuscator:
         :param node:
         :return:
         """
+        if node is None:
+            return
         if node.type.endswith('identifier'):
             line_num, start_col = node.start_point
             _, end_col = node.end_point
             line = self.old_lines[line_num]
             first_non_indent_char_col = len(line) - len(line.lstrip())
             old_name = line[start_col:end_col]
-            if old_name not in self.token_map:
-                self.var_counter += 1
-                self.token_map[old_name] = node.type
-            new_name = self.token_map[old_name]
+            new_name = node.type
             if start_col == first_non_indent_char_col:  # checking if this token is first in line
                 self.new_lines[line_num] = self.new_lines[line_num].replace(old_name, new_name, 1)
                 return
-            token_start_new_line = re.search(fr'\W{old_name}\W', self.new_lines[line_num]).start() + 1
-            token_end_new_line = re.search(fr'\W{old_name}\W', self.new_lines[line_num]).end() - 1
+            token_start_new_line = self.new_lines[line_num].find(f' {old_name} ') + 1
+            token_end_new_line = token_start_new_line + len(old_name)
             self.new_lines[line_num] = self.new_lines[line_num][:token_start_new_line] + new_name + self.new_lines[line_num][token_end_new_line:]
             return
         if len(node.children) == 0:

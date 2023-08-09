@@ -1,6 +1,6 @@
 # CCAligner
 
-This repo contains an implementation of CCAligner algorithm for script written on Python.
+This repo contains an implementation of CCAligner algorithm on Python, with support of Python and Java.
 
 It is required to run 
 

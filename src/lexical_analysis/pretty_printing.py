@@ -252,7 +252,6 @@ class PrettyPrinterJava(PrettyPrinter):
             sp.insert_new_lines()
         return True
 
-
     def pretty_print(self):
         if self.remove_comments_codebase():
             print("Removed comments")
