@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/src/lexical_analysis/tree-sitter-python" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tree-sitter-c-sharp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tree-sitter-java" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tree-sitter-python" vcs="Git" />
   </component>

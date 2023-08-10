@@ -68,8 +68,8 @@ class PrettyPrinter(object):
         with open(file_loc, 'r') as source_file:
             lines = source_file.readlines()
         code_fragment_lines = lines[start_line: end_line + 1]
-        code_fragment_lines[end_line - start_line] = lines[end_line][:end_col - 1]
-        code_fragment_lines[0] = code_fragment_lines[0][start_col + 1:]
+        code_fragment_lines[end_line - start_line] = lines[end_line][:end_col]
+        code_fragment_lines[0] = code_fragment_lines[0][start_col:]
         extracted_code = ''.join(code_fragment_lines)
         true_start_line = start_line + 1
         true_end_line = end_line + 1
@@ -218,6 +218,8 @@ class PrettyPrinterJava(PrettyPrinter):
     def __init__(self, codebase_loc: str, pretty_loc: str, language):
         super().__init__(codebase_loc, pretty_loc, language)
         self._lang_ext = ".java"
+        if language == 'csharp':
+            self._lang_ext = '.cs'
         self._without_comments_loc = self._pretty_codebase_loc + '/without_comments'
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
         self._one_whitespace_loc = self._pretty_codebase_loc + '/one_whitespace'

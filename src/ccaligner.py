@@ -15,6 +15,9 @@ if language == 'python':
 elif language == 'java':
     lang_ext = '.java'
 
+elif language == 'c-sharp':
+    lang_ext = '.cs'
+
 
 pretty_loc = "./data/normalized_codebases/"
 if os.path.exists(pretty_loc):
@@ -24,6 +27,9 @@ if language == 'python':
     pp = prpr.PrettyPrinterPy(codebase_loc, pretty_loc, language)
 elif language == 'java':
     pp = prpr.PrettyPrinterJava(codebase_loc, pretty_loc, language)
+elif language == 'c-sharp':
+    pp = prpr.PrettyPrinterJava(codebase_loc, pretty_loc, language)
+
 
 pp.pretty_print()
 
