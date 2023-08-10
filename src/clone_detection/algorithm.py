@@ -97,7 +97,7 @@ class CCalignerAlgorithm:
         for mapp in self.cand_map.values():
             if len(mapp) >= 2:
                 hashable_pairs = []
-                for pair in self.filter_pairs_of_names(self.all_combinations(list(mapp), 2)):
+                for pair in self.all_combinations(list(mapp), 2):
                     hashable_pairs.append(pair[0] + '|' + pair[1])
                 self.cand_pair.update(hashable_pairs)
         self.verify_pairs()
