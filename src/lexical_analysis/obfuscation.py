@@ -20,7 +20,7 @@ class Obfuscator:
         """
         if node is None:
             return
-        if node.type.endswith('identifier'):
+        if node.type.endswith('identifier') or node.type.endswith('literal'):
             line_num, start_col = node.start_point
             _, end_col = node.end_point
             line = self.old_lines[line_num]
