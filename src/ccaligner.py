@@ -33,6 +33,8 @@ final_dir = pretty_loc + codebase_loc.split('/')[-1] + '/' + 'obfuscated'
 cca = CCalignerAlgorithm(final_dir, lang_ext, 6, 1)
 pairs = cca.run_algo()
 
+prpr.print_with_time('Algorithm plowed')
+
 clones = pd.DataFrame({'dir_1': pd.Series(dtype='str'),
                        'file_name1': pd.Series(dtype='str'),
                        'start_line1': pd.Series(dtype='int'),
@@ -53,3 +55,4 @@ for file1, file2 in pairs:
     clones.loc[len(clones)] = [dir1, file_name1, start_1, end_1, dir2, file_name2, start_2, end_2]
 
 clones.to_csv('clones.csv', header=False, index=False)
+prpr.print_with_time('Check clones.csv out')

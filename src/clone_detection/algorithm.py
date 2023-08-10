@@ -1,6 +1,6 @@
 import glob
 from typing import List, Any
-
+from numpy import sign
 import mmh3
 
 
@@ -13,6 +13,7 @@ class CCalignerAlgorithm:
         self.e = edit_distance
         self.theta = theta
         self.files = []
+        self.lang_ext = lang_ext
         for file in glob.glob(self.dir + "/**/*" + lang_ext, recursive=True):
             self.files.append(file)
         self.cand_map = dict()
@@ -36,6 +37,26 @@ class CCalignerAlgorithm:
         combinations = []
         complete_combination(0, [])
         return combinations
+
+    def filter_pairs_of_names(self, combinations):
+        filtered_combinations = []
+
+        for file1, file2 in combinations:
+            file1_info = file1.split('/')
+            file2_info = file2.split('/')
+            dir1 = file1_info[-3]
+            dir2 = file2_info[-3]
+            file_name1 = file1_info[-2] + self.lang_ext
+            file_name2 = file2_info[-2] + self.lang_ext
+            start_1, end_1 = file1_info[-1][:-len(self.lang_ext)].split('_')
+            start_2, end_2 = file2_info[-1][:-len(self.lang_ext)].split('_')
+            if start_1 > start_2:
+                start_1, start_2 = start_2, start_1
+                end_1, end_2 = end_2, end_1
+            if not (dir1 == dir2 and file_name1 == file_name2 and
+                    sign(int(start_2) - int(start_1)) * sign(int(start_2) - int(end_1)) < 0):
+                filtered_combinations.append([file1, file2])
+            return filtered_combinations
 
     def index_codeblock(self, file):
         with open(file, 'r') as f:
@@ -76,7 +97,7 @@ class CCalignerAlgorithm:
         for mapp in self.cand_map.values():
             if len(mapp) >= 2:
                 hashable_pairs = []
-                for pair in self.all_combinations(list(mapp), 2):
+                for pair in self.filter_pairs_of_names(self.all_combinations(list(mapp), 2)):
                     hashable_pairs.append(pair[0] + '|' + pair[1])
                 self.cand_pair.update(hashable_pairs)
         self.verify_pairs()
