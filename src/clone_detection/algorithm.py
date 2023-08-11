@@ -65,7 +65,7 @@ class CCalignerAlgorithm:
         num_of_wndws = L - self.q + 1
         hash_sub_set = set()
         for win_start in range(num_of_wndws):
-            window = lines[win_start : win_start + self.q]
+            window = lines[win_start: win_start + self.q]
             for h in self.all_combinations(window, self.q - self.e):
                 k = mmh3.hash128("".join(h))
                 hash_sub_set.add(str(k) + '|' + str(win_start))
@@ -82,9 +82,11 @@ class CCalignerAlgorithm:
             hashes_in_f_n = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_n])
             hashes_intersection = hashes_in_f_n.intersection(hashes_in_f_m)
             num_match_1 = len(
-                set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_m] if hash_pair.split('|')[0] in hashes_intersection))
+                set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_m] if
+                    hash_pair.split('|')[0] in hashes_intersection))
             num_match_2 = len(
-                set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_m] if hash_pair.split('|')[0] in hashes_intersection))
+                set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_n] if
+                    hash_pair.split('|')[0] in hashes_intersection))
 
             num_win_m = sum(1 for _ in open(f_m)) - self.q + 1
             num_win_n = sum(1 for _ in open(f_n)) - self.q + 1

@@ -48,9 +48,8 @@ class NewlineInserter:
 
             if child.type.endswith('_statement') or child.type.endswith('_declaration') or child.type.endswith('clause'):
                 self.statements_ends.append(st_end + 1)
-                self.bfs(child)
-            if child.type == 'block':
-                self.bfs(child)
+            self.bfs(child)
+
 
     def insert_new_lines(self):
         parser = Parser()
