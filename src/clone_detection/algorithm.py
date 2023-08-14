@@ -7,7 +7,7 @@ import mmh3
 class CCalignerAlgorithm:
     clone_pair: List[Any]
 
-    def __init__(self, codeblocks_dir, lang_ext, window_size=6, edit_distance=1, theta=0.5):
+    def __init__(self, codeblocks_dir, lang_ext, window_size=6, edit_distance=1, theta=0.6):
         self.dir = codeblocks_dir
         self.q = window_size
         self.e = edit_distance

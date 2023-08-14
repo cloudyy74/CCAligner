@@ -128,9 +128,11 @@ class PrettyPrinter(object):
             content = f.readlines()
 
         with open(file_dest + '/' + new_file_name, 'w') as f:
-            for line in content:
+            for line in content[:-1]:
                 if line.strip() != '':
                     f.write(' '.join(line.split()) + line_sep_ch)
+            if content[-1].strip() != '':
+                f.write(' '.join(content[-1].split()))
 
 
 class PrettyPrinterPy(PrettyPrinter):

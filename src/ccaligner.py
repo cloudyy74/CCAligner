@@ -12,6 +12,7 @@ args = define_args()
 
 codebase_loc = args.codebase_loc
 language = args.lang
+theta = int(args.theta)/100
 if language == 'python':
     lang_ext = '.py'
 elif language == 'java':
@@ -34,7 +35,7 @@ pp.pretty_print()
 
 final_dir = pretty_loc + codebase_loc.split('/')[-1] + '/' + 'obfuscated'
 
-cca = CCalignerAlgorithm(final_dir, lang_ext, 6, 1)
+cca = CCalignerAlgorithm(final_dir, lang_ext, 6, 1, theta)
 pairs = cca.run_algo()
 
 prpr.print_with_time('Algorithm plowed')
