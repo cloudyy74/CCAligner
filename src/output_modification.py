@@ -2,6 +2,11 @@ import pandas as pd
 from numpy import sign
 
 
+column_names = dict(dir1=pd.Series(dtype='str'), name1=pd.Series(dtype='str'), start1=pd.Series(dtype='int'),
+                    end1=pd.Series(dtype='int'), dir2=pd.Series(dtype='str'), name2=pd.Series(dtype='str'),
+                    start2=pd.Series(dtype='int'), end2=pd.Series(dtype='int'))
+
+
 def filter_nested_clones(pairs, lang_ext):
     """
     filters pairs, where one of the fragment is in the second one
@@ -28,15 +33,7 @@ def filter_nested_clones(pairs, lang_ext):
 
 
 def clones_list_to_df(clones_list, lang_ext):
-    clones_df = pd.DataFrame({'dir1': pd.Series(dtype='str'),
-                              'name1': pd.Series(dtype='str'),
-                              'start1': pd.Series(dtype='int'),
-                              'end1': pd.Series(dtype='int'),
-                              'dir2': pd.Series(dtype='str'),
-                              'name2': pd.Series(dtype='str'),
-                              'start2': pd.Series(dtype='int'),
-                              'end2': pd.Series(dtype='int'),
-                              })
+    clones_df = pd.DataFrame(column_names)
     list_with_records = list()
     for file1, file2 in clones_list:  # writes list of clones into the dataframe
         dir1 = file1.split('/')[-3]
@@ -71,6 +68,22 @@ def regulate_records(df):
     return df.drop_duplicates()
 
 
+def fragments_consisting_this(df, row):
+    filtration_names = (df['dir1'] == row['dir1']) & (df['dir2'] == row['dir2']) & \
+                       (df['name1'] == row['name1']) & (df['name2'] == row['name2'])
+    first_consisting = (df['start1'] <= row['start1']) & (df['end1'] >= row['end1'])
+    second_consisting = (df['start2'] <= row['start2']) & (df['end2'] >= row['end2'])
+    return df[filtration_names & first_consisting & second_consisting]
+
+
+def only_biggest(df):
+    biggest_fragments = pd.DataFrame(column_names)
+    for index, row in df.iterrows():
+        if len(fragments_consisting_this(df, row)) == 1:
+            biggest_fragments.loc[len(biggest_fragments)] = row
+
+    return biggest_fragments
+
 
 def sort_clones(df):
     """
@@ -78,4 +91,5 @@ def sort_clones(df):
     :param df:
     :return:
     """
-    df.sort_values(by=['name1', 'name2'], inplace=True)
+    df.sort_values(by=['name1', 'name2', 'start1', 'start2'], inplace=True)
+
