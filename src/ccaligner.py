@@ -53,6 +53,6 @@ prpr.print_with_time('Check clones.csv out')
 
 df_py = pd.read_csv("clones.csv", names=["dir1", 'name1', 'start1', 'end1', "dir2", 'name2', 'start2', 'end2'])
 
-om.only_biggest(df_py).to_csv("only_biggest.csv",index=False, header=False)
+om.only_biggest(df_py).to_csv("only_biggest.csv", index=False, header=False)
 
 prpr.print_with_time('Check only_biggest.csv out')

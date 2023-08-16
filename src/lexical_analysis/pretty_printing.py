@@ -129,11 +129,28 @@ class PrettyPrinter(object):
             content = f.readlines()
 
         with open(file_dest + '/' + new_file_name, 'w') as f:
-            for line in content[:-1]:
+            for line in content:
                 if line.strip() != '':
                     f.write(' '.join(line.split()) + line_sep_ch)
-            if content[-1].strip() != '':
-                f.write(' '.join(content[-1].split()))
+
+    @staticmethod
+    def glue_ends_file(file_loc, file_dest, line_sep_ch):
+        new_file_name = file_loc.split('/')[-1]
+        with open(file_loc, "r") as f:
+            content = f.readlines()
+
+        with open(file_dest + '/' + new_file_name, 'w') as f:
+            for i in range(len(content) - 1):
+                line = content[i]
+                next_line = content[i+1]
+                if line.strip() != '':
+                    if next_line.strip() != ';':
+                        f.write(' '.join(line.split()) + line_sep_ch)
+                    else:
+                        f.write(' '.join(line.split()) + ' ')
+            line = content[-1]
+            f.write(' '.join(line.split()) + line_sep_ch)
+
 
 
 class PrettyPrinterPy(PrettyPrinter):
@@ -246,6 +263,14 @@ class PrettyPrinterJava(PrettyPrinter):
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
             same_dir = self.handling_file_storage(file, dest_loc)
             self.glue_gaps_file(file, same_dir, line_sep_ch)
+        return True
+
+    def glue_ends_codebase(self, from_loc, dest_loc, line_sep_ch):
+        if not os.path.exists(dest_loc):
+            os.mkdir(dest_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self.handling_file_storage(file, dest_loc)
+            self.glue_ends_file(file, same_dir, line_sep_ch)
         return True
 
     def insert_whitespaces_codebase(self, from_loc, dest_loc):

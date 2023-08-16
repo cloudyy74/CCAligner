@@ -1,7 +1,6 @@
 import pandas as pd
 from numpy import sign
 
-
 column_names = dict(dir1=pd.Series(dtype='str'), name1=pd.Series(dtype='str'), start1=pd.Series(dtype='int'),
                     end1=pd.Series(dtype='int'), dir2=pd.Series(dtype='str'), name2=pd.Series(dtype='str'),
                     start2=pd.Series(dtype='int'), end2=pd.Series(dtype='int'))
@@ -23,11 +22,8 @@ def filter_nested_clones(pairs, lang_ext):
         file_name2 = file2_info[-2] + lang_ext
         start_1, end_1 = file1_info[-1][:-len(lang_ext)].split('_')
         start_2, end_2 = file2_info[-1][:-len(lang_ext)].split('_')
-        if start_1 > start_2:
-            start_1, start_2 = start_2, start_1
-            end_1, end_2 = end_2, end_1
         if not (dir1 == dir2 and file_name1 == file_name2 and
-                sign(int(start_2) - int(start_1)) * sign(int(start_2) - int(end_1)) < 0):
+                (int(start_2) in range(int(start_1), int(end_1)) or int(start_1) in range(int(start_2), int(end_2)))):
             filtered_pairs.append([file1, file2])
     return filtered_pairs
 
@@ -93,3 +89,12 @@ def sort_clones(df):
     """
     df.sort_values(by=['name1', 'name2', 'start1', 'start2'], inplace=True)
 
+
+def different_files(df):
+    mask = (df['name1'] != df['name2'])
+    return df[mask]
+
+
+def suspicious_hws(df):
+    df2 = df[['name1', 'name2']]
+    return df2.drop_duplicates()

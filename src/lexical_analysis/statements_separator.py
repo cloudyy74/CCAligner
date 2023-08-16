@@ -41,6 +41,7 @@ class NewlineInserter:
                 self.bfs(alternative)
             return
         if node.type == 'block':
+            self.statements_ends.append(node.start_point[1])
             self.statements_ends.append(node.start_point[1] + 2)
         for child in node.children:
             _, st_end = child.end_point
