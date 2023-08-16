@@ -13,7 +13,7 @@ class SpaceInserter:
 
     def insert_spaces(self):
         parser = Parser()
-        language = Language('../build/my-languages.so', self.language)
+        language = Language('../build/my-languages.so', self.language.replace('-', '_'))
         parser.set_language(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()

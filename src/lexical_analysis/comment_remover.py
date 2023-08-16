@@ -37,11 +37,11 @@ class CommentRemover:
 
     def remove_comments(self):
         parser = Parser()
-        language = Language('../build/my-languages.so', self.language)
+        language = Language('../build/my-languages.so', self.language.replace('-', '_'))
         parser.set_language(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()
-        with open(self.file_loc, 'r') as f:
+        with open(self.file_loc, 'r', encoding='latin-1') as f:
             self.old_lines = f.readlines()
         self.new_lines = self.old_lines.copy()
         self.tree = parser.parse(content)

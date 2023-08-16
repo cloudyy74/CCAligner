@@ -23,7 +23,8 @@ Language.build_library(
   # Include one or more languages
   [
     'tree-sitter-python',
-    'tree-sitter-java'
+    'tree-sitter-java',
+    'tree-sitter-c-sharp'
   ]
 )
 
@@ -94,12 +95,12 @@ class PrettyPrinter(object):
 
     def split_to_codeblocks_file(self, file_loc, new_loc):
         parser = Parser()
-        language = Language('../build/my-languages.so', self._language)
+        language = Language('../build/my-languages.so', self._language.replace('-', '_'))
         parser.set_language(language)
         with open(file_loc, "rb") as f:
             content = f.read()
         self.tree = parser.parse(content)
-        storing_loc = new_loc + '/' + file_loc.split('/')[-1][:-5]
+        storing_loc = new_loc + '/' + file_loc.split('/')[-1][:-len(self._lang_ext)]
         os.mkdir(storing_loc)
         root_node = self.tree.root_node
         self.finding_blocks(root_node, storing_loc, file_loc)
@@ -220,7 +221,7 @@ class PrettyPrinterJava(PrettyPrinter):
     def __init__(self, codebase_loc: str, pretty_loc: str, language):
         super().__init__(codebase_loc, pretty_loc, language)
         self._lang_ext = ".java"
-        if language == 'csharp':
+        if language == 'c-sharp':
             self._lang_ext = '.cs'
         self._without_comments_loc = self._pretty_codebase_loc + '/without_comments'
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
