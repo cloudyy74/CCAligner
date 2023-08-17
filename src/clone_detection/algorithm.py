@@ -1,6 +1,7 @@
 import glob
 from typing import List, Any
 from numpy import sign
+from itertools import combinations
 import mmh3
 
 
@@ -66,7 +67,7 @@ class CCalignerAlgorithm:
         hash_sub_set = set()
         for win_start in range(num_of_wndws):
             window = lines[win_start: win_start + self.q]
-            for h in self.all_combinations(window, self.q - self.e):
+            for h in combinations(window, self.q - self.e):
                 k = mmh3.hash128("".join(h))
                 hash_sub_set.add(str(k) + '|' + str(win_start))
                 if k in self.cand_map:
@@ -99,7 +100,7 @@ class CCalignerAlgorithm:
         for mapp in self.cand_map.values():
             if len(mapp) >= 2:
                 hashable_pairs = []
-                for pair in self.all_combinations(list(mapp), 2):
+                for pair in combinations(list(mapp), 2):
                     hashable_pairs.append(pair[0] + '|' + pair[1])
                 self.cand_pair.update(hashable_pairs)
         self.verify_pairs()
