@@ -27,7 +27,7 @@ class CommentRemover:
                     self.new_lines[start_line] = line[:start_col] + (' ' * (end_col - start_col)) + line[end_col:]
                 for line_num in range(start_line + 1, end_line):
                     self.new_lines[line_num] = ' \n'
-                self.new_lines[start_line] = self.old_lines[start_line][:start_col]
+                self.new_lines[start_line] = self.old_lines[start_line][:start_col] + '\n'
                 self.new_lines[end_line] = (' ' * end_col) + self.old_lines[end_line][end_col:]
             return
         if len(node.children) == 0:

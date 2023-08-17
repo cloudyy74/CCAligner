@@ -89,7 +89,6 @@ class PrettyPrinter(object):
         if node.type == 'block' or (node.type == 'compound_statement' and self._lang_ext == '.cpp'):
             start = node.start_point
             end = node.end_point
-
             self.copy_code_fragment(file_loc, storing_loc, start, end)
         for child in node.children:
             self.finding_blocks(child, storing_loc, file_loc)
