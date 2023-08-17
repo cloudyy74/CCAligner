@@ -24,7 +24,8 @@ Language.build_library(
   [
     'tree-sitter-python',
     'tree-sitter-java',
-    'tree-sitter-c-sharp'
+    'tree-sitter-c-sharp',
+    'tree-sitter-cpp'
   ]
 )
 
@@ -85,7 +86,7 @@ class PrettyPrinter(object):
     def finding_blocks(self, node, storing_loc, file_loc):
         if len(node.children) == 0:
             return
-        if node.type == 'block':
+        if node.type == 'block' or (node.type == 'compound_statement' and self._lang_ext == '.cpp'):
             start = node.start_point
             end = node.end_point
 
@@ -240,6 +241,8 @@ class PrettyPrinterJava(PrettyPrinter):
         self._lang_ext = ".java"
         if language == 'c-sharp':
             self._lang_ext = '.cs'
+        if language == 'cpp':
+            self._lang_ext = '.cpp'
         self._without_comments_loc = self._pretty_codebase_loc + '/without_comments'
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
         self._one_whitespace_loc = self._pretty_codebase_loc + '/one_whitespace'

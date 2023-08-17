@@ -40,7 +40,7 @@ class NewlineInserter:
                 self.statements_ends.append(alternative.start_point[1])
                 self.bfs(alternative)
             return
-        if node.type == 'block':
+        if node.type == 'block' or (node.type == 'compound_statement' and self.language == 'cpp'):
             self.statements_ends.append(node.start_point[1])
             self.statements_ends.append(node.start_point[1] + 2)
         for child in node.children:
