@@ -64,6 +64,8 @@ class CCalignerAlgorithm:
             lines = f.readlines()
         L = len(lines)
         num_of_wndws = L - self.q + 1
+        if num_of_wndws <= 0:
+            return
         hash_sub_set = set()
         for win_start in range(num_of_wndws):
             window = lines[win_start: win_start + self.q]

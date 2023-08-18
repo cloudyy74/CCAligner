@@ -115,7 +115,8 @@ class PrettyPrinter(object):
         return True
 
     def obfuscate_codebase(self, from_loc, dest_loc):
-        os.mkdir(dest_loc)
+        if not os.path.exists(dest_loc):
+            os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
             same_dir = self.handling_file_storage(file, dest_loc)
             ob = Obfuscator(file, same_dir, self._language)
@@ -276,7 +277,8 @@ class PrettyPrinterJava(PrettyPrinter):
         return True
 
     def insert_whitespaces_codebase(self, from_loc, dest_loc):
-        os.mkdir(dest_loc)
+        if not os.path.exists(dest_loc):
+            os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
             same_dir = self.handling_file_storage(file, dest_loc)
             si = SpaceInserter(file, same_dir, self._language)
@@ -284,7 +286,8 @@ class PrettyPrinterJava(PrettyPrinter):
         return True
 
     def insert_new_lines_codebase(self, from_loc, dest_loc):
-        os.mkdir(dest_loc)
+        if not os.path.exists(dest_loc):
+            os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
             same_dir = self.handling_file_storage(file, dest_loc)
             sp = NewlineInserter(file, same_dir, self._language)
@@ -296,15 +299,15 @@ class PrettyPrinterJava(PrettyPrinter):
             print_with_time("Removed comments")
         if self.split_to_codeblocks_codebase():
             print_with_time("Splitted to codeblocks")
-        if self.glue_gaps_codebase(self._codeblocks_loc, self._one_whitespace_loc, ' '):
-            print_with_time("Styled")
-        if self.insert_whitespaces_codebase(self._one_whitespace_loc, self._separated_tokens_loc):
+        if self.glue_gaps_codebase(self._codeblocks_loc, self._obfuscated_loc, ' '):
+            print_with_time("Written to one line")
+        if self.insert_whitespaces_codebase(self._obfuscated_loc, self._obfuscated_loc):
             print_with_time("Tokens are separated")
-        if self.glue_gaps_codebase(self._separated_tokens_loc, self._sep_and_glued_loc, ' '):
+        if self.glue_gaps_codebase(self._obfuscated_loc, self._obfuscated_loc, ' '):
             print_with_time("Styled again")
-        if self.insert_new_lines_codebase(self._sep_and_glued_loc, self._pretttty_loc):
+        if self.insert_new_lines_codebase(self._obfuscated_loc, self._obfuscated_loc):
             print_with_time("Statements are separated")
-        if self.obfuscate_codebase(self._pretttty_loc, self._obfuscated_loc):
+        if self.obfuscate_codebase(self._obfuscated_loc, self._obfuscated_loc):
             print_with_time("Obfuscated")
         if self.glue_gaps_codebase(self._obfuscated_loc, self._obfuscated_loc, '\n'):
             print_with_time("Styled again")
