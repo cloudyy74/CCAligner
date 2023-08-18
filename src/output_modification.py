@@ -38,11 +38,17 @@ def clones_list_to_df(clones_list, lang_ext):
         file_name2 = file2.split('/')[-2] + lang_ext
         start_1, end_1 = file1.split('/')[-1][:-len(lang_ext)].split('_')
         start_2, end_2 = file2.split('/')[-1][:-len(lang_ext)].split('_')
-        list_with_records.append([dir1, file_name1, start_1, end_1, dir2, file_name2, start_2,
-                                  end_2])
+        length1 = int(end_1) - int(start_1)
+        length2 = int(end_2) - int(start_2)
+        if length1 < length2 or (length1 == length2 and start_1 > start_2):
+            list_with_records.append([dir2, file_name2, start_2, end_2,
+                                      dir1, file_name1, start_1, end_1])
+        else:
+            list_with_records.append([dir1, file_name1, start_1, end_1,
+                                      dir2, file_name2, start_2, end_2])
     return pd.concat([clones_df, pd.DataFrame(list_with_records, columns=['dir1', 'name1', 'start1', 'end1',
                                                                           'dir2', 'name2', 'start2', 'end2'])],
-                     ignore_index=True)
+                     ignore_index=True).drop_duplicates()
 
 
 def regulate_records(df):
