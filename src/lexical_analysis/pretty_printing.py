@@ -10,23 +10,21 @@ from lexical_analysis.comment_remover import CommentRemover
 from lexical_analysis.space_inserter_between_tokens import SpaceInserter
 from lexical_analysis.statements_separator import NewlineInserter
 
-
-
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
 JAVA_STYLER_LOC = 'src/styling/google-java-format-1.17.0-all-deps.jar'
 
 Language.build_library(
-  # Store the library in the `build` directory
-  '../build/my-languages.so',
+    # Store the library in the `build` directory
+    '../build/my-languages.so',
 
-  # Include one or more languages
-  [
-    'tree-sitter-python',
-    'tree-sitter-java',
-    'tree-sitter-c-sharp',
-    'tree-sitter-cpp'
-  ]
+    # Include one or more languages
+    [
+        'tree-sitter-python',
+        'tree-sitter-java',
+        'tree-sitter-c-sharp',
+        'tree-sitter-cpp'
+    ]
 )
 
 
@@ -39,7 +37,7 @@ class PrettyPrinter(object):
         self._pretty_codebase_loc = pretty_loc + self._codebase_loc.split('/')[-1]
         os.mkdir(pretty_loc)
         os.mkdir(self._pretty_codebase_loc)
-        print("init from base_class")
+        print_with_time("init from base_class")
         self._codeblocks_loc = self._pretty_codebase_loc + "/codeblocks"
         self._obfuscated_loc = self._pretty_codebase_loc + "/obfuscated"
         self._without_type1_changes_loc = self._pretty_codebase_loc + "/without_comments"
@@ -58,7 +56,7 @@ class PrettyPrinter(object):
 
     def copy_code_fragment(self, file_loc: str, storing_loc: str, start, end):
         """
-        
+
         :param file_loc:
         :param file_dest:
         :param start_line:
@@ -86,7 +84,8 @@ class PrettyPrinter(object):
     def finding_blocks(self, node, storing_loc, file_loc):
         if len(node.children) == 0:
             return
-        if node.type == 'block' or (node.type == 'compound_statement' and self._lang_ext == '.cpp'):
+        if node.type == 'block' or node.type.endswith('body') or (
+                node.type == 'compound_statement' and self._lang_ext == '.cpp'):
             start = node.start_point
             end = node.end_point
             self.copy_code_fragment(file_loc, storing_loc, start, end)
@@ -143,7 +142,7 @@ class PrettyPrinter(object):
         with open(file_dest + '/' + new_file_name, 'w') as f:
             for i in range(len(content) - 1):
                 line = content[i]
-                next_line = content[i+1]
+                next_line = content[i + 1]
                 if line.strip() != '':
                     if next_line.strip() != ';':
                         f.write(' '.join(line.split()) + line_sep_ch)
@@ -151,7 +150,6 @@ class PrettyPrinter(object):
                         f.write(' '.join(line.split()) + ' ')
             line = content[-1]
             f.write(' '.join(line.split()) + line_sep_ch)
-
 
 
 class PrettyPrinterPy(PrettyPrinter):
@@ -231,8 +229,9 @@ class PrettyPrinterPy(PrettyPrinter):
 
 
 def print_with_time(message):
-    print(message)
-    print(time.ctime(time.time()))
+    with open('log_4', 'a') as f:
+        print(message, file=f)
+        print(time.ctime(time.time()), file=f)
 
 
 class PrettyPrinterJava(PrettyPrinter):
