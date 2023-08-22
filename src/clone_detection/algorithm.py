@@ -22,6 +22,10 @@ class CCalignerAlgorithm:
         self.cand_pair = set()
         self.clone_pair = list()
 
+    def add_files(self, new_codeblocks_dir):
+        for file in glob.glob(new_codeblocks_dir + "/**/*" + self.lang_ext, recursive=True):
+            self.files.append(file)
+
     @staticmethod
     def all_combinations(arr: list, k: int) -> list:
         n = len(arr)

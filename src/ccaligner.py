@@ -51,7 +51,7 @@ om.sort_clones(clones_df)
 #clones_df = om.regulate_records(clones_df)
 clones_df.to_csv('clones.csv', header=False, index=False)
 prpr.print_with_time('Check clones.csv out')
-
+prpr.print_with_time('_'*40)
 #df_py = pd.read_csv("clones.csv", names=["dir1", 'name1', 'start1', 'end1', "dir2", 'name2', 'start2', 'end2'])
 
 #om.only_biggest(df_py).to_csv("only_biggest.csv", index=False, header=False)

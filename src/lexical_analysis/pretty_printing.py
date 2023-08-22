@@ -228,8 +228,8 @@ class PrettyPrinterPy(PrettyPrinter):
             print("Obfuscated")
 
 
-def print_with_time(message):
-    with open('log_4', 'a') as f:
+def print_with_time(message, to='log_4'):
+    with open(to, 'a') as f:
         print(message, file=f)
         print(time.ctime(time.time()), file=f)
 
