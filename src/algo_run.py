@@ -15,6 +15,7 @@ args = define_args()
 codebase1 = args.codebase1
 codebase2 = args.codebase2
 cipher =  codebase1.split('/')[-1] + "_" + codebase2.split('/')[-1]
+print_with_time()
 log_file = './logs/' + cipher + '.log'
 clonesfile = './clones/' + cipher + '.csv'
 language = args.lang
@@ -27,6 +28,9 @@ elif language == 'c-sharp':
     lang_ext = '.cs'
 elif language == 'cpp':
     lang_ext = '.cpp'
+
+print_with_time("Execution started", log_file)
+
 
 cca = CCalignerAlgorithm(codebase1, lang_ext)
 cca.add_files(codebase2)
