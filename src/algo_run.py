@@ -15,7 +15,7 @@ args = define_args()
 codebase1 = args.codebase1
 codebase2 = args.codebase2
 cipher =  codebase1.split('/')[-1] + "_" + codebase2.split('/')[-1]
-print_with_time()
+
 log_file = './logs/' + cipher + '.log'
 clonesfile = './clones/' + cipher + '.csv'
 language = args.lang
