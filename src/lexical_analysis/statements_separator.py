@@ -25,13 +25,13 @@ class NewlineInserter:
             return
         if node.type.endswith('for_statement'):
             body = node.child_by_field_name('body')
-            if body.type != 'block' or node.type.endswith('body') :
+            if body.type != 'block' or body.type.endswith('body'):
                 self.statements_ends.append(body.start_point[1])
             self.bfs(body)
             return
         if node.child_by_field_name('consequence') is not None:  # handling if_statement
             consequence = node.child_by_field_name('consequence')
-            if consequence.type != 'block' or node.type.endswith('body') :
+            if consequence.type != 'block' or consequence.type.endswith('body'):
                 self.statements_ends.append(consequence.start_point[1])
             self.bfs(consequence)
             if node.child_by_field_name('alternative') is not None:
@@ -43,6 +43,7 @@ class NewlineInserter:
         if node.type == 'block' or (node.type == 'compound_statement' and self.language == 'cpp') or node.type.endswith('body'):
             self.statements_ends.append(node.start_point[1])
             self.statements_ends.append(node.start_point[1] + 2)
+            self.statements_ends.append(node.end_point[1] + 1)
         for child in node.children:
             _, st_end = child.end_point
             _, st_start = child.start_point
