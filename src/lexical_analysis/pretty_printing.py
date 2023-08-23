@@ -123,7 +123,7 @@ class PrettyPrinter(object):
         return True
 
     @staticmethod
-    def glue_gaps_file(file_loc, file_dest, line_sep_ch):
+    def glue_gaps_file(file_loc, file_dest, line_sep_ch, tok_sep_ch=' '):
         new_file_name = file_loc.split('/')[-1]
         with open(file_loc, "r") as f:
             content = f.readlines()
@@ -131,7 +131,7 @@ class PrettyPrinter(object):
         with open(file_dest + '/' + new_file_name, 'w') as f:
             for line in content:
                 if line.strip() != '':
-                    f.write(' '.join(line.split()) + line_sep_ch)
+                    f.write(tok_sep_ch.join(line.split()) + line_sep_ch)
 
     @staticmethod
     def glue_ends_file(file_loc, file_dest, line_sep_ch):
@@ -259,12 +259,12 @@ class PrettyPrinterJava(PrettyPrinter):
             cr.remove_comments()
         return True
 
-    def glue_gaps_codebase(self, from_loc, dest_loc, line_sep_ch):
+    def glue_gaps_codebase(self, from_loc, dest_loc, line_sep_ch, tok_sep_ch=' '):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
             same_dir = self.handling_file_storage(file, dest_loc)
-            self.glue_gaps_file(file, same_dir, line_sep_ch)
+            self.glue_gaps_file(file, same_dir, line_sep_ch, tok_sep_ch)
         return True
 
     def glue_ends_codebase(self, from_loc, dest_loc, line_sep_ch):
@@ -308,7 +308,7 @@ class PrettyPrinterJava(PrettyPrinter):
             print_with_time("Statements are separated")
         if self.obfuscate_codebase(self._obfuscated_loc, self._obfuscated_loc):
             print_with_time("Obfuscated")
-        if self.glue_gaps_codebase(self._obfuscated_loc, self._obfuscated_loc, '\n'):
+        if self.glue_gaps_codebase(self._obfuscated_loc, self._obfuscated_loc, '\n', ''):
             print_with_time("Styled again")
 
 

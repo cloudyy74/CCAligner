@@ -43,26 +43,6 @@ class CCalignerAlgorithm:
         complete_combination(0, [])
         return combinations
 
-    def filter_pairs_of_names(self, combinations):
-        filtered_combinations = []
-
-        for file1, file2 in combinations:
-            file1_info = file1.split('/')
-            file2_info = file2.split('/')
-            dir1 = file1_info[-3]
-            dir2 = file2_info[-3]
-            file_name1 = file1_info[-2] + self.lang_ext
-            file_name2 = file2_info[-2] + self.lang_ext
-            start_1, end_1 = file1_info[-1][:-len(self.lang_ext)].split('_')
-            start_2, end_2 = file2_info[-1][:-len(self.lang_ext)].split('_')
-            if start_1 > start_2:
-                start_1, start_2 = start_2, start_1
-                end_1, end_2 = end_2, end_1
-            if not (dir1 == dir2 and file_name1 == file_name2 and
-                    sign(int(start_2) - int(start_1)) * sign(int(start_2) - int(end_1)) < 0):
-                filtered_combinations.append([file1, file2])
-            return filtered_combinations
-
     def index_codeblock(self, file):
         with open(file, 'r') as f:
             lines = f.readlines()
@@ -100,6 +80,25 @@ class CCalignerAlgorithm:
             if num_match_1 >= self.theta * num_win_m or num_match_2 >= self.theta * num_win_n:
                 self.clone_pair.append([f_m, f_n])
 
+    def get_coordinates_of_fragment(self, fragment_file_loc):
+        file_name = fragment_file_loc.split('/')[-1]
+        start, end = file_name[:-len(self.lang_ext)].split('_')
+        return int(start), int(end)
+
+    @staticmethod
+    def get_file_of_fragment(fragment_file_loc):
+        file = fragment_file_loc.split('/')[:-1]
+        return "".join(file)
+
+    def are_fragments_nested(self, fragment_1, fragment_2):
+        if self.get_file_of_fragment(fragment_1) != self.get_file_of_fragment(fragment_2):
+            return False
+        start1, end1 = self.get_coordinates_of_fragment(fragment_1)
+        start2, end2 = self.get_coordinates_of_fragment(fragment_2)
+        if start1 not in range(start2, end2) and start2 not in range(start1, end1):
+            return False
+        return True
+
     def run_algo(self):
         for file in self.files:
             self.index_codeblock(file)
@@ -107,7 +106,8 @@ class CCalignerAlgorithm:
             if len(mapp) >= 2:
                 hashable_pairs = []
                 for pair in combinations(list(mapp), 2):
-                    hashable_pairs.append(pair[0] + '|' + pair[1])
+                    if not self.are_fragments_nested(pair[0], pair[1]):
+                        hashable_pairs.append(pair[0] + '|' + pair[1])
                 self.cand_pair.update(hashable_pairs)
         self.verify_pairs()
         return self.clone_pair
