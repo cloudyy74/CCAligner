@@ -12,6 +12,32 @@ class Obfuscator:
         self.old_lines = None
         self.var_counter = 0
 
+    @staticmethod
+    def is_named_token(token_type):
+        if token_type.endswith('identifier') or token_type.endswith('literal'):
+            return True
+        return False
+
+    @staticmethod
+    def reduction_of_type(node_type):
+        f = lambda x: x[0] if len(x) > 0 else ""
+        return ("".join(f(x) for x in node_type.split("_"))).upper()
+
+    def rename_named_token(self, node):
+        line_num, start_col = node.start_point
+        _, end_col = node.end_point
+        line = self.old_lines[line_num]
+        first_non_indent_char_col = len(line) - len(line.lstrip())
+        old_name = line[start_col:end_col]
+        new_name = self.reduction_of_type(node.type)
+        if start_col == first_non_indent_char_col:  # checking if this token is first in line
+            self.new_lines[line_num] = self.new_lines[line_num].replace(old_name, new_name, 1)
+            return
+        token_start_new_line = self.new_lines[line_num].find(f' {old_name} ') + 1
+        token_end_new_line = token_start_new_line + len(old_name)
+        self.new_lines[line_num] = self.new_lines[line_num][:token_start_new_line] + new_name + \
+                                   self.new_lines[line_num][token_end_new_line:]
+
     def dfs(self, node):
         """
         searching for identifiers nodes in tree and renaming them
@@ -20,21 +46,8 @@ class Obfuscator:
         """
         if node is None:
             return
-        if node.type.endswith('identifier') or node.type.endswith('literal'):
-            line_num, start_col = node.start_point
-            _, end_col = node.end_point
-            line = self.old_lines[line_num]
-            first_non_indent_char_col = len(line) - len(line.lstrip())
-            old_name = line[start_col:end_col]
-            new_name = node.type
-            if start_col == first_non_indent_char_col:  # checking if this token is first in line
-                self.new_lines[line_num] = self.new_lines[line_num].replace(old_name, new_name, 1)
-                return
-            token_start_new_line = self.new_lines[line_num].find(f' {old_name} ') + 1
-            token_end_new_line = token_start_new_line + len(old_name)
-            self.new_lines[line_num] = self.new_lines[line_num][:token_start_new_line] + new_name + self.new_lines[line_num][token_end_new_line:]
-            return
-        if len(node.children) == 0:
+        if len(node.children) == 0 and self.is_named_token(node.type):
+            self.rename_named_token(node)
             return
         for child in node.children:
             self.dfs(child)
@@ -55,5 +68,3 @@ class Obfuscator:
         with open(self.file_dest + '/' + file_name, 'w') as nf:
             new_content = ''.join(self.new_lines)
             nf.write(new_content)
-
-
