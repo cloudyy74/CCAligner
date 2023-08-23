@@ -84,10 +84,15 @@ class PrettyPrinter(object):
     def finding_blocks(self, node, storing_loc, file_loc):
         if len(node.children) == 0:
             return
-        if node.type == 'block' or node.type.endswith('body') or (
+        if node.type.endswith('body') or (
                 node.type == 'compound_statement' and self._lang_ext == '.cpp'):
             start = node.start_point
             end = node.end_point
+            self.copy_code_fragment(file_loc, storing_loc, start, end)
+        if node.child_by_field_name('body') is not None:
+            body_node = node.child_by_field_name('body')
+            start = body_node.start_point
+            end = body_node.end_point
             self.copy_code_fragment(file_loc, storing_loc, start, end)
         for child in node.children:
             self.finding_blocks(child, storing_loc, file_loc)
