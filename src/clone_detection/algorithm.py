@@ -18,6 +18,7 @@ class CCalignerAlgorithm:
         for file in glob.glob(self.dir + "/**/*" + lang_ext, recursive=True):
             self.files.append(file)
         self.cand_map = dict()
+        self.lines_in = dict()
         self.hash_set = dict()
         self.cand_pair = set()
         self.cand_pair_list = list()
@@ -31,6 +32,7 @@ class CCalignerAlgorithm:
         with open(file, 'r') as f:
             lines = f.readlines()
         L = len(lines)
+        self.lines_in[file] = L
         num_of_wndws = L - self.q + 1
         if num_of_wndws <= 0:
             return
@@ -58,8 +60,8 @@ class CCalignerAlgorithm:
             set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_n] if
                 hash_pair.split('|')[0] in hashes_intersection))
 
-        num_win_m = sum(1 for _ in open(f_m)) - self.q + 1
-        num_win_n = sum(1 for _ in open(f_n)) - self.q + 1
+        num_win_m = self.lines_in[f_m] - self.q + 1
+        num_win_n = self.lines_in[f_n] - self.q + 1
         if num_match_1 >= self.theta * num_win_m or num_match_2 >= self.theta * num_win_n:
             return True
         return False
