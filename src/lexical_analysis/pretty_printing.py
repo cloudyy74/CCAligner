@@ -84,7 +84,7 @@ class PrettyPrinter(object):
     def finding_blocks(self, node, storing_loc, file_loc):
         if len(node.children) == 0:
             return
-        if node.type.endswith('body') or (
+        if node.type.endswith('body') or node.type == 'block' or (
                 node.type == 'compound_statement' and self._lang_ext == '.cpp'):
             start = node.start_point
             end = node.end_point
