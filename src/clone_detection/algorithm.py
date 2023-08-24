@@ -20,6 +20,7 @@ class CCalignerAlgorithm:
         self.cand_map = dict()
         self.hash_set = dict()
         self.cand_pair = set()
+        self.cand_pair_list = list()
         self.clone_pair = list()
 
     def add_files(self, new_codeblocks_dir):
@@ -45,23 +46,28 @@ class CCalignerAlgorithm:
                     self.cand_map[k] = {file}
         self.hash_set[file] = hash_sub_set
 
-    def verify_pairs(self):
-        for f_m_f_n in self.cand_pair:
-            f_m, f_n = f_m_f_n.split('|')
-            hashes_in_f_m = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_m])
-            hashes_in_f_n = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_n])
-            hashes_intersection = hashes_in_f_n.intersection(hashes_in_f_m)
-            num_match_1 = len(
-                set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_m] if
-                    hash_pair.split('|')[0] in hashes_intersection))
-            num_match_2 = len(
-                set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_n] if
-                    hash_pair.split('|')[0] in hashes_intersection))
+    def verify_pair(self, f_m_f_n):
+        f_m, f_n = f_m_f_n.split('|')
+        hashes_in_f_m = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_m])
+        hashes_in_f_n = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_n])
+        hashes_intersection = hashes_in_f_n.intersection(hashes_in_f_m)
+        num_match_1 = len(
+            set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_m] if
+                hash_pair.split('|')[0] in hashes_intersection))
+        num_match_2 = len(
+            set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_n] if
+                hash_pair.split('|')[0] in hashes_intersection))
 
-            num_win_m = sum(1 for _ in open(f_m)) - self.q + 1
-            num_win_n = sum(1 for _ in open(f_n)) - self.q + 1
-            if num_match_1 >= self.theta * num_win_m or num_match_2 >= self.theta * num_win_n:
-                self.clone_pair.append([f_m, f_n])
+        num_win_m = sum(1 for _ in open(f_m)) - self.q + 1
+        num_win_n = sum(1 for _ in open(f_n)) - self.q + 1
+        if num_match_1 >= self.theta * num_win_m or num_match_2 >= self.theta * num_win_n:
+            return True
+        return False
+
+    def verify_pairs(self):
+        self.cand_pair_list = list(self.cand_pair)
+        clones_cand_indices = [self.verify_pair(f_m_f_n) for f_m_f_n in self.cand_pair_list]
+        self.clone_pair = [self.cand_pair_list[i].split('|') for i in range(len(self.cand_pair_list)) if clones_cand_indices[i]]
 
     def get_coordinates_of_fragment(self, fragment_file_loc):
         file_name = fragment_file_loc.split('/')[-1]
