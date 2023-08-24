@@ -26,23 +26,6 @@ class CCalignerAlgorithm:
         for file in glob.glob(new_codeblocks_dir + "/**/*" + self.lang_ext, recursive=True):
             self.files.append(file)
 
-    @staticmethod
-    def all_combinations(arr: list, k: int) -> list:
-        n = len(arr)
-
-        def complete_combination(start, combination):
-            if len(combination) == k:
-                combinations.append(combination[:])
-                return
-            for i in range(start, n):
-                combination.append(arr[i])
-                complete_combination(i + 1, combination)
-                combination.pop()
-
-        combinations = []
-        complete_combination(0, [])
-        return combinations
-
     def index_codeblock(self, file):
         with open(file, 'r') as f:
             lines = f.readlines()
