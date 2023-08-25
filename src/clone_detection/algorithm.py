@@ -101,6 +101,8 @@ class CCalignerAlgorithm:
                     if not self.are_fragments_nested(pair[0], pair[1]):
                         hashable_pairs.append(pair[0] + '|' + pair[1])
                 self.cand_pair.update(hashable_pairs)
+        print_with_time("Form candidates")
+
         self.verify_pairs()
         print_with_time("Verifying done")
         return self.clone_pair
