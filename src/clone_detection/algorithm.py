@@ -3,7 +3,7 @@ from typing import List, Any
 #from joblib import Parallel, delayed
 from itertools import combinations
 import mmh3
-
+from lexical_analysis.pretty_printing import print_with_time
 
 class CCalignerAlgorithm:
     clone_pair: List[Any]
@@ -93,6 +93,7 @@ class CCalignerAlgorithm:
     def run_algo(self):
         for file in self.files:
             self.index_codeblock(file)
+        print_with_time("Indexing done")
         for mapp in self.cand_map.values():
             if len(mapp) >= 2:
                 hashable_pairs = []
@@ -101,4 +102,5 @@ class CCalignerAlgorithm:
                         hashable_pairs.append(pair[0] + '|' + pair[1])
                 self.cand_pair.update(hashable_pairs)
         self.verify_pairs()
+        print_with_time("Verifying done")
         return self.clone_pair
