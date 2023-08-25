@@ -1,6 +1,6 @@
 import glob
 from typing import List, Any
-#from joblib import Parallel, delayed
+from joblib import Parallel, delayed
 from itertools import combinations
 import mmh3
 from lexical_analysis.pretty_printing import print_with_time
@@ -68,7 +68,7 @@ class CCalignerAlgorithm:
 
     def verify_pairs(self):
         self.cand_pair_list = list(self.cand_pair)
-        clones_cand_indices = [self.verify_pair(f_m_f_n) for f_m_f_n in self.cand_pair_list]
+        clones_cand_indices = Parallel(n_jobs=2)(delayed(self.verify_pair)(f_m_f_n) for f_m_f_n in self.cand_pair_list)
         self.clone_pair = [self.cand_pair_list[i].split('|') for i in range(len(self.cand_pair_list)) if clones_cand_indices[i]]
 
     def get_coordinates_of_fragment(self, fragment_file_loc):
