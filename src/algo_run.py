@@ -29,13 +29,14 @@ elif language == 'c-sharp':
 elif language == 'cpp':
     lang_ext = '.cpp'
 
-print_with_time("Execution started", log_file)
+print_with_time("_"*40)
+print_with_time("Execution started")
 
 
 cca = CCalignerAlgorithm(codebase1, lang_ext)
 cca.add_files(codebase2)
 pairs = cca.run_algo()
-print_with_time('Algorithm plowed', log_file)
+print_with_time('Algorithm plowed')
 
 pairs = om.filter_nested_clones(pairs, lang_ext)
 
@@ -44,7 +45,7 @@ clones_df = om.clones_list_to_df(pairs, lang_ext)
 om.sort_clones(clones_df)
 
 clones_df.to_csv(clonesfile, header=False, index=False)
-print_with_time('Check clones out', log_file)
+print_with_time('Check clones out')
 print_with_time('_'*40, log_file)
 
 

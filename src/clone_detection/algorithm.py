@@ -1,9 +1,16 @@
 import glob
 from typing import List, Any
-from joblib import Parallel, delayed
+#from joblib import Parallel, delayed
 from itertools import combinations
 import mmh3
-from lexical_analysis.pretty_printing import print_with_time
+import time
+
+
+def print_with_time(message, to='log_4'):
+    with open(to, 'a') as f:
+        print(message, file=f)
+        print(time.ctime(time.time()), file=f)
+
 
 class CCalignerAlgorithm:
     clone_pair: List[Any]
@@ -20,13 +27,28 @@ class CCalignerAlgorithm:
         self.cand_map = dict()
         self.lines_in = dict()
         self.hash_set = dict()
-        self.cand_pair = set()
+        self.cand_pair = dict()  # we store in cand_pair pairs of fragments as keys, and values are cardinality of
+        # hashes_intersection
         self.cand_pair_list = list()
         self.clone_pair = list()
 
     def add_files(self, new_codeblocks_dir):
         for file in glob.glob(new_codeblocks_dir + "/**/*" + self.lang_ext, recursive=True):
             self.files.append(file)
+
+    def process_hash_gram(self, k, file):
+        """
+        we call this function after collecting all of grams in particular window
+        :param file:
+        :param k: is a given hash of q-e-gram in file.
+        :return:
+        """
+        if k not in self.cand_map:
+            self.cand_map[k] = {file: 1}
+        elif file not in self.cand_map[k]:
+            self.cand_map[k][file] = 1
+        else:
+            self.cand_map[k][file] += 1
 
     def index_codeblock(self, file):
         with open(file, 'r') as f:
@@ -39,17 +61,28 @@ class CCalignerAlgorithm:
         hash_sub_set = set()
         for win_start in range(num_of_wndws):
             window = lines[win_start: win_start + self.q]
+
+            hash_grams_in_window = set()
+
             for h in combinations(window, self.q - self.e):
                 k = mmh3.hash128("".join(h))
                 hash_sub_set.add(str(k) + '|' + str(win_start))
-                if k in self.cand_map:
-                    self.cand_map[k].add(file)
-                else:
-                    self.cand_map[k] = {file}
+                hash_grams_in_window.add(k)
+
+            for k in hash_grams_in_window:
+                self.process_hash_gram(k, file)
+
+
         self.hash_set[file] = hash_sub_set
 
-    def verify_pair(self, f_m_f_n):
+    def verify_pair(self, f_m_f_n, upper_est_m, upper_est_n):
         f_m, f_n = f_m_f_n.split('|')
+        num_win_m = self.lines_in[f_m] - self.q + 1
+        num_win_n = self.lines_in[f_n] - self.q + 1
+
+        if upper_est_m < self.theta * num_win_m and upper_est_n < self.theta * num_win_n:
+            return False
+
         hashes_in_f_m = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_m])
         hashes_in_f_n = set(hash_pair.split('|')[0] for hash_pair in self.hash_set[f_n])
         hashes_intersection = hashes_in_f_n.intersection(hashes_in_f_m)
@@ -60,16 +93,14 @@ class CCalignerAlgorithm:
             set(hash_pair.split('|')[1] for hash_pair in self.hash_set[f_n] if
                 hash_pair.split('|')[0] in hashes_intersection))
 
-        num_win_m = self.lines_in[f_m] - self.q + 1
-        num_win_n = self.lines_in[f_n] - self.q + 1
         if num_match_1 >= self.theta * num_win_m or num_match_2 >= self.theta * num_win_n:
             return True
         return False
 
     def verify_pairs(self):
-        self.cand_pair_list = list(self.cand_pair)
-        clones_cand_indices = Parallel(n_jobs=2)(delayed(self.verify_pair)(f_m_f_n) for f_m_f_n in self.cand_pair_list)
-        self.clone_pair = [self.cand_pair_list[i].split('|') for i in range(len(self.cand_pair_list)) if clones_cand_indices[i]]
+        self.cand_pair_list = list([hashable_pair_name, *cards] for hashable_pair_name, cards in self.cand_pair.items())
+        clones_cand_indices = [self.verify_pair(*f_m_f_n_cards) for f_m_f_n_cards in self.cand_pair_list]
+        self.clone_pair = [self.cand_pair_list[i][0].split('|') for i in range(len(self.cand_pair_list)) if clones_cand_indices[i]]
 
     def get_coordinates_of_fragment(self, fragment_file_loc):
         file_name = fragment_file_loc.split('/')[-1]
@@ -90,17 +121,25 @@ class CCalignerAlgorithm:
             return False
         return True
 
+    def update_candidates(self, hashable_pair_name, card_first, card_second):
+        if hashable_pair_name not in self.cand_pair:
+            self.cand_pair[hashable_pair_name] = [card_first, card_second]
+        else:
+            self.cand_pair[hashable_pair_name][0] += card_first
+            self.cand_pair[hashable_pair_name][1] += card_second
+
     def run_algo(self):
         for file in self.files:
             self.index_codeblock(file)
         print_with_time("Indexing done")
         for mapp in self.cand_map.values():
             if len(mapp) >= 2:
-                hashable_pairs = []
-                for pair in combinations(list(mapp), 2):
+                for pair in combinations(list(mapp.keys()), 2):
                     if not self.are_fragments_nested(pair[0], pair[1]):
-                        hashable_pairs.append(pair[0] + '|' + pair[1])
-                self.cand_pair.update(hashable_pairs)
+                        first_in_pair = min(pair[0], pair[1]); card_first = mapp[first_in_pair]
+                        second_in_pair = max(pair[0], pair[1]); card_second = mapp[second_in_pair]
+                        hashable_pair_name = first_in_pair + '|' + second_in_pair
+                        self.update_candidates(hashable_pair_name, card_first, card_second)
         print_with_time("Form candidates")
 
         self.verify_pairs()
