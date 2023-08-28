@@ -46,7 +46,7 @@ class Obfuscator:
         """
         if node is None:
             return
-        if len(node.children) == 0 and self.is_named_token(node.type):
+        if (len(node.children) == 0 and self.is_named_token(node.type)) or node.type == "string_literal":
             self.rename_named_token(node)
             return
         for child in node.children:
