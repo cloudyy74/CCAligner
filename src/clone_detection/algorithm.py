@@ -15,12 +15,13 @@ def print_with_time(message, to='log_4'):
 class CCalignerAlgorithm:
     clone_pair: List[Any]
 
-    def __init__(self, codeblocks_dir, lang_ext, window_size=6, edit_distance=1, theta=0.6):
+    def __init__(self, codeblocks_dir, lang_ext, window_size=6, edit_distance=1, theta=0.6, mil=10):
         self.dir = codeblocks_dir
         self.q = window_size
         self.e = edit_distance
         self.theta = theta
         self.files = []
+        self.mil = mil
         self.lang_ext = lang_ext
         for file in glob.glob(self.dir + "/**/*" + lang_ext, recursive=True):
             self.files.append(file)
@@ -56,7 +57,7 @@ class CCalignerAlgorithm:
         L = len(lines)
         self.lines_in[file] = L
         num_of_wndws = L - self.q + 1
-        if num_of_wndws <= 0:
+        if num_of_wndws <= 0 or L < self.mil:
             return
         hash_sub_set = set()
         for win_start in range(num_of_wndws):
