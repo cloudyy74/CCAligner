@@ -39,17 +39,22 @@ final_dir = pretty_loc + codebase_loc.split('/')[-1] + '/' + 'obfuscated'
 cca = CCalignerAlgorithm(final_dir, lang_ext, 6, 1, theta)
 pairs = cca.run_algo()
 
+print(len(pairs))
+
 prpr.print_with_time('Algorithm plowed')
 
-pairs = om.filter_nested_clones(pairs, lang_ext)
+# pairs = om.filter_nested_clones(pairs, lang_ext)
 
-clones_df = om.clones_list_to_df(pairs, lang_ext)
+# clones_df = om.clones_list_to_df(pairs, lang_ext)
 
-om.sort_clones(clones_df)
+# om.sort_clones(clones_df)
 
-#clones_df =
-#clones_df = om.regulate_records(clones_df)
-clones_df.to_csv('clones.csv', header=False, index=False)
+# clones_df =
+# clones_df = om.regulate_records(clones_df)
+# clones_df.to_csv('clones.csv', header=False, index=False)
+
+om.write_clone_list(pairs, lang_ext, 'clones.csv')
+
 prpr.print_with_time('Check clones.csv out')
 prpr.print_with_time('_'*40)
 #df_py = pd.read_csv("clones.csv", names=["dir1", 'name1', 'start1', 'end1', "dir2", 'name2', 'start2', 'end2'])

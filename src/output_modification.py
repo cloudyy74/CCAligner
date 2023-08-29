@@ -28,27 +28,40 @@ def filter_nested_clones(pairs, lang_ext):
     return filtered_pairs
 
 
+def to_benchmark_format(fragment_name, lang_ext):
+    dir = fragment_name.split('/')[-3]
+    file_name = fragment_name.split('/')[-2] + lang_ext
+    start, end = fragment_name.split('/')[-1][:-len(lang_ext)].split('_')
+    return [dir, file_name, start, end]
+
+
 def clones_list_to_df(clones_list, lang_ext):
     clones_df = pd.DataFrame(column_names)
     list_with_records = list()
-    for file1, file2 in clones_list:  # writes list of clones into the dataframe
+    for file1, file2 in clones_list:
         dir1 = file1.split('/')[-3]
         dir2 = file2.split('/')[-3]
         file_name1 = file1.split('/')[-2] + lang_ext
         file_name2 = file2.split('/')[-2] + lang_ext
         start_1, end_1 = file1.split('/')[-1][:-len(lang_ext)].split('_')
         start_2, end_2 = file2.split('/')[-1][:-len(lang_ext)].split('_')
-        length1 = int(end_1) - int(start_1)
-        length2 = int(end_2) - int(start_2)
-        if length1 < length2 or (length1 == length2 and start_1 > start_2):
-            list_with_records.append([dir2, file_name2, start_2, end_2,
-                                      dir1, file_name1, start_1, end_1])
-        else:
-            list_with_records.append([dir1, file_name1, start_1, end_1,
-                                      dir2, file_name2, start_2, end_2])
+        list_with_records.append([dir2, file_name2, start_2, end_2,
+                                  dir1, file_name1, start_1, end_1])
     return pd.concat([clones_df, pd.DataFrame(list_with_records, columns=['dir1', 'name1', 'start1', 'end1',
                                                                           'dir2', 'name2', 'start2', 'end2'])],
                      ignore_index=True).drop_duplicates()
+
+
+def list_record_to_benchmark_record(pair, lang_ext):
+    first_fragment = ','.join(to_benchmark_format(pair[0], lang_ext))
+    second_fragment = ','.join(to_benchmark_format(pair[1], lang_ext))
+    return ','.join([first_fragment, second_fragment])
+
+
+def write_clone_list(clones_list, lang_ext, file_output):
+    with open(file_output, 'w+') as f:
+        f.writelines(list_record_to_benchmark_record(rec, lang_ext) + '\n' for rec in clones_list)
+    return True
 
 
 def regulate_records(df):
