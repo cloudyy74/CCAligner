@@ -99,9 +99,14 @@ class CCalignerAlgorithm:
         return False
 
     def verify_pairs(self):
-        self.cand_pair_list = list([hashable_pair_name, *cards] for hashable_pair_name, cards in self.cand_pair.items())
-        clones_cand_indices = [self.verify_pair(*f_m_f_n_cards) for f_m_f_n_cards in self.cand_pair_list]
-        self.clone_pair = [self.cand_pair_list[i][0].split('|') for i in range(len(self.cand_pair_list)) if clones_cand_indices[i]]
+        while self.cand_pair:
+            another_pair = self.cand_pair.popitem()
+            hashable_pair_name = another_pair[0]
+            upper_est_m, upper_est_n = another_pair[1]
+            if self.verify_pair(hashable_pair_name, upper_est_m, upper_est_n):
+                fragment1, fragment2 = hashable_pair_name.split("|")
+                self.clone_pair.append([fragment1, fragment2])
+
 
     def get_coordinates_of_fragment(self, fragment_file_loc):
         file_name = fragment_file_loc.split('/')[-1]
