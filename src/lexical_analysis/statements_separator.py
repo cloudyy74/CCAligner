@@ -1,5 +1,5 @@
-from tree_sitter import Language, Parser
 from numpy import array, sort
+from tree_sitter import Language, Parser
 
 
 class NewlineInserter:

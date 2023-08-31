@@ -1,7 +1,8 @@
+import time
+
+import output_modification as om
 from algo_launch import define_args
 from clone_detection.algorithm import CCalignerAlgorithm
-import output_modification as om
-import time
 
 
 def print_with_time(message, to='log_4'):

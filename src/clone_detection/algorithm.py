@@ -1,9 +1,10 @@
 import glob
-from typing import List, Any
-#from joblib import Parallel, delayed
-from itertools import combinations
-import mmh3
 import time
+# from joblib import Parallel, delayed
+from itertools import combinations
+from typing import List, Any
+
+import mmh3
 
 
 def print_with_time(message, to='log_4'):

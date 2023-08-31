@@ -1,5 +1,4 @@
 import pandas as pd
-from numpy import sign
 
 column_names = dict(dir1=pd.Series(dtype='str'), name1=pd.Series(dtype='str'), start1=pd.Series(dtype='int'),
                     end1=pd.Series(dtype='int'), dir2=pd.Series(dtype='str'), name2=pd.Series(dtype='str'),

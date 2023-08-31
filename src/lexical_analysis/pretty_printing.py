@@ -1,12 +1,14 @@
-from subprocess import run
-from shutil import copytree
-import tokenize
 import glob
 import os
 import time
+import tokenize
+from shutil import copytree
+from subprocess import run
+
 from tree_sitter import Language, Parser
-from lexical_analysis.obfuscation import Obfuscator
+
 from lexical_analysis.comment_remover import CommentRemover
+from lexical_analysis.obfuscation import Obfuscator
 from lexical_analysis.space_inserter_between_tokens import SpaceInserter
 from lexical_analysis.statements_separator import NewlineInserter
 

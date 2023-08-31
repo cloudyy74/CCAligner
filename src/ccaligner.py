@@ -1,12 +1,10 @@
-import lexical_analysis.pretty_printing as prpr
-from launching import define_args
-from shutil import rmtree
 import os
-import pandas as pd
-from clone_detection.algorithm import CCalignerAlgorithm
-import output_modification as om
-from numpy import sign
+from shutil import rmtree
 
+import lexical_analysis.pretty_printing as prpr
+import output_modification as om
+from clone_detection.algorithm import CCalignerAlgorithm
+from launching import define_args
 
 args = define_args()
 
