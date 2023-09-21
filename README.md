@@ -1,6 +1,8 @@
-# CCAligner
+# CCAlignerpy
 
-This repo contains an implementation of CCAligner algorithm on Python, with support of Python and Java.
+This repo contains an implementation of modified CCAligner algorithm on Python, with support of Python, Java, C++ and C#.
+
+
 
 It is required to run 
 
@@ -14,10 +16,13 @@ It is required to run
 
 in the project root before working.
 
+And also you should have mmh3, numpy, pandas
+
 
 Example:
 
 ``python3 ./src/ccaligner.py -from ./data/original_codebases/paper_example -l java -theta 60``
 
+## Modification
 
-
+It is not exactly an implementation of 
