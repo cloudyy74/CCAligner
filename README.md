@@ -1,4 +1,4 @@
-# CCAlignerpy
+# modCCAligner
 
 This repo contains an implementation of modified CCAligner algorithm on Python, with support of Python, Java, C++ and C#.
 
@@ -25,4 +25,4 @@ Example:
 
 ## Modification
 
-It is not exactly an implementation of 
+It is not exactly an implementation of CCAligner, this tool contains a number of modifications and heuristics:
