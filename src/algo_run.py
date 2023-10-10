@@ -15,6 +15,7 @@ def print_with_time(message, to='log_4'):
 args = define_args()
 codebase1 = args.codebase1
 codebase2 = args.codebase2
+mode = args.mode
 cipher = codebase1.split('/')[-1] + "_" + codebase2.split('/')[-1]
 
 log_file = './logs/' + cipher + '.log'
@@ -34,7 +35,7 @@ print_with_time("_"*40, to=log_file)
 print_with_time("Execution started", to=log_file)
 
 
-cca = CCalignerAlgorithm(codebase1, lang_ext, mode=2)
+cca = CCalignerAlgorithm(codebase1, lang_ext, mode=mode)
 cca.add_files(codebase2)
 pairs = cca.run_algo()
 print_with_time('Algorithm plowed', to=log_file)
