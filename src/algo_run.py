@@ -34,7 +34,7 @@ print_with_time("_"*40, to=log_file)
 print_with_time("Execution started", to=log_file)
 
 
-cca = CCalignerAlgorithm(codebase1, lang_ext)
+cca = CCalignerAlgorithm(codebase1, lang_ext, mode=2)
 cca.add_files(codebase2)
 pairs = cca.run_algo()
 print_with_time('Algorithm plowed', to=log_file)
