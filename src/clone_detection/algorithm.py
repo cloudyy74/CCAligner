@@ -16,7 +16,8 @@ def print_with_time(message, to='log_4'):
 class CCalignerAlgorithm:
     clone_pair: List[Any]
 
-    def __init__(self, codeblocks_dir, lang_ext, window_size=6, edit_distance=1, theta=0.6, mil=10):
+    def __init__(self, codeblocks_dir, lang_ext, window_size=6, edit_distance=1, theta=0.6, mil=10, mode=1):
+        self.mode = mode # mode = 1 means full search, mode = 2 for only inter-project clones
         self.dir = codeblocks_dir
         self.q = window_size
         self.e = edit_distance
@@ -115,6 +116,11 @@ class CCalignerAlgorithm:
         return int(start), int(end)
 
     @staticmethod
+    def get_codebase_of_fragment(fragment_file_loc):
+        file = fragment_file_loc.split('/')[:-3]
+        return "".join(file)
+
+    @staticmethod
     def get_file_of_fragment(fragment_file_loc):
         file = fragment_file_loc.split('/')[:-1]
         return "".join(file)
@@ -135,6 +141,17 @@ class CCalignerAlgorithm:
             self.cand_pair[hashable_pair_name][0] += card_first
             self.cand_pair[hashable_pair_name][1] += card_second
 
+    def are_fragments_from_different_codebases(self, fragment_1, fragment_2):
+        """
+
+        :rtype: bool
+        """
+        return self.get_file_of_fragment(fragment_1) != self.get_codebase_of_fragment(fragment_2)
+
+    def is_pair_interesting(self, pair):
+        return (not self.are_fragments_nested(pair[0], pair[1]) and
+                (self.mode == 1 or self.are_fragments_from_different_codebases(pair[0], pair[1])))
+
     def run_algo(self):
         for file in self.files:
             self.index_codeblock(file)
@@ -142,7 +159,7 @@ class CCalignerAlgorithm:
         for mapp in self.cand_map.values():
             if len(mapp) >= 2:
                 for pair in combinations(list(mapp.keys()), 2):
-                    if not self.are_fragments_nested(pair[0], pair[1]):
+                    if self.is_pair_interesting(pair):
                         first_in_pair = min(pair[0], pair[1]); card_first = mapp[first_in_pair]
                         second_in_pair = max(pair[0], pair[1]); card_second = mapp[second_in_pair]
                         hashable_pair_name = first_in_pair + '|' + second_in_pair
