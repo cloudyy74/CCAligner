@@ -1,9 +1,9 @@
 import os
 from shutil import copytree
 
-dir = "../data/normalized_codebases/6/obfuscated"
-dir_dest = "../data/normalized_codebases/6/parts"
-number_of_parts = 8
+dir = "../data/normalized_codebases/sample/obfuscated"
+dir_dest = "../data/original_codebases/parts"
+number_of_parts = 2
 
 if not os.path.exists(dir_dest):
     os.mkdir(dir_dest)

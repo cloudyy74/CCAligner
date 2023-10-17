@@ -15,7 +15,7 @@ def print_with_time(message, to='log_4'):
 args = define_args()
 codebase1 = args.codebase1
 codebase2 = args.codebase2
-mode = args.mode
+mode = int(args.mode)
 cipher = codebase1.split('/')[-1] + "_" + codebase2.split('/')[-1]
 
 log_file = './logs/' + cipher + '.log'
