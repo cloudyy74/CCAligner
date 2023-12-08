@@ -16,7 +16,7 @@ It is required to run
 
 in the project root before working.
 
-And also you should have mmh3, numpy, pandas
+And also you should have mmh3, numpy, pandas.
 
 
 Example:
@@ -26,3 +26,6 @@ Example:
 ## Modification
 
 It is not exactly an implementation of CCAligner, this tool contains a number of modifications and heuristics:
+
+1. Report granularity is code blocks, instead of methods.
+2. Indexing consists expanded information compared with original implementation, for the sake of space-time trade-off.
