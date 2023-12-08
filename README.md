@@ -16,7 +16,7 @@ It is required to run
 
 in the project root before working.
 
-And also you should have mmh3, numpy, pandas.
+And also you should have mmh3, numpy, pandas installed.
 
 
 Example:
