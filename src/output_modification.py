@@ -1,5 +1,7 @@
 import pandas as pd
 
+from lexical_analysis.pretty_printing import PrettyPrinter
+
 column_names = dict(dir1=pd.Series(dtype='str'), name1=pd.Series(dtype='str'), start1=pd.Series(dtype='int'),
                     end1=pd.Series(dtype='int'), dir2=pd.Series(dtype='str'), name2=pd.Series(dtype='str'),
                     start2=pd.Series(dtype='int'), end2=pd.Series(dtype='int'))
@@ -34,6 +36,12 @@ def to_benchmark_format(fragment_name, lang_ext):
     return [dir, file_name, start, end]
 
 
+def to_usual_format(codebase_loc, final_dir, fragment_name, lang_ext):
+    file_name = codebase_loc + '/' + PrettyPrinter.parent_dir_relative_adress(final_dir, fragment_name) + lang_ext
+    start, end = fragment_name.split('/')[-1][:-len(lang_ext)].split('_')
+    return [file_name, start, end]
+
+
 def clones_list_to_df(clones_list, lang_ext):
     clones_df = pd.DataFrame(column_names)
     list_with_records = list()
@@ -55,6 +63,18 @@ def list_record_to_benchmark_record(pair, lang_ext):
     first_fragment = ','.join(to_benchmark_format(pair[0], lang_ext))
     second_fragment = ','.join(to_benchmark_format(pair[1], lang_ext))
     return ','.join([first_fragment, second_fragment])
+
+
+def list_record_to_usual_record(code_base_loc, final_dir, pair, lang_ext):
+    first_fragment = ','.join(to_usual_format(code_base_loc, final_dir, pair[0], lang_ext))
+    second_fragment = ','.join(to_usual_format(code_base_loc, final_dir, pair[1], lang_ext))
+    return ','.join([first_fragment, second_fragment])
+
+
+def write_clone_list_correct(code_base_loc, final_dir, clone_list, lang_ext, file_output):
+    with open(file_output, 'w+') as f:
+        f.writelines(list_record_to_usual_record(code_base_loc, final_dir, rec, lang_ext) + '\n' for rec in clone_list)
+    return True
 
 
 def write_clone_list(clones_list, lang_ext, file_output):

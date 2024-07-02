@@ -52,10 +52,13 @@ prpr.print_with_time('Algorithm plowed')
 # clones_df = om.regulate_records(clones_df)
 # clones_df.to_csv('clones.csv', header=False, index=False)
 
-om.write_clone_list(pairs, lang_ext, 'clones.csv')
+#om.write_clone_list(pairs, lang_ext, 'clones.csv')
+
+
+om.write_clone_list_correct(codebase_loc, final_dir, pairs, lang_ext, 'clones.csv')
 
 prpr.print_with_time('Check clones.csv out')
-prpr.print_with_time('_'*40)
+prpr.print_with_time('_' * 40)
 df_py = pd.read_csv("clones.csv", names=["dir1", 'name1', 'start1', 'end1', "dir2", 'name2', 'start2', 'end2'])
 
 om.only_biggest(df_py).to_csv("only_biggest.csv", index=False, header=False)

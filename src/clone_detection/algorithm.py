@@ -79,7 +79,6 @@ class CCalignerAlgorithm:
             for k in hash_grams_in_window:
                 self.process_hash_gram(k, file)
 
-
         self.hash_set[file] = hash_sub_set
 
     def verify_pair(self, f_m_f_n, upper_est_m, upper_est_n):
