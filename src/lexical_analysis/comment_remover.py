@@ -1,3 +1,5 @@
+import tree_sitter_java as tsjava
+
 from tree_sitter import Language, Parser
 
 
@@ -37,7 +39,7 @@ class CommentRemover:
 
     def remove_comments(self):
         parser = Parser()
-        language = Language('../build/my-languages.so', self.language.replace('-', '_'))
+        language = Language(tsjava.language())
         parser.set_language(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()

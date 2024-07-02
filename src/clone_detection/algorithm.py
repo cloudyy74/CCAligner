@@ -53,6 +53,10 @@ class CCalignerAlgorithm:
         else:
             self.cand_map[k][file] += 1
 
+
+
+
+
     def index_codeblock(self, file):
         with open(file, 'r') as f:
             lines = f.readlines()

@@ -1,5 +1,7 @@
 from numpy import array, sort
 from tree_sitter import Language, Parser
+import tree_sitter_java as tsjava
+
 
 
 class NewlineInserter:
@@ -55,7 +57,7 @@ class NewlineInserter:
 
     def insert_new_lines(self):
         parser = Parser()
-        language = Language('../build/my-languages.so', self.language.replace('-', '_'))
+        language = Language(tsjava.language())
         parser.set_language(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()

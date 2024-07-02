@@ -6,6 +6,8 @@ from shutil import copytree
 from subprocess import run
 
 from tree_sitter import Language, Parser
+import tree_sitter_java as tsjava
+
 
 from lexical_analysis.comment_remover import CommentRemover
 from lexical_analysis.obfuscation import Obfuscator
@@ -14,20 +16,7 @@ from lexical_analysis.statements_separator import NewlineInserter
 
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
-JAVA_STYLER_LOC = 'src/styling/google-java-format-1.17.0-all-deps.jar'
 
-Language.build_library(
-    # Store the library in the `build` directory
-    '../build/my-languages.so',
-
-    # Include one or more languages
-    [
-        'tree-sitter-python',
-        'tree-sitter-java',
-        'tree-sitter-c-sharp',
-        'tree-sitter-cpp'
-    ]
-)
 
 
 class PrettyPrinter(object):
@@ -47,24 +36,21 @@ class PrettyPrinter(object):
         self._styled_loc = self._pretty_codebase_loc + '/styled_codeblocks_loc'
 
     @staticmethod
-    def handling_file_storage(file_name, dest_loc):
-        same_dir_par = dest_loc + '/' + file_name.split('/')[-3]
-        if not os.path.exists(same_dir_par):
-            os.mkdir(same_dir_par)
-        same_dir = same_dir_par + '/' + file_name.split('/')[-2]
+    def handling_file_storage(from_loc, file_name, dest_loc):
+        same_dir = dest_loc + '/' + PrettyPrinter.parent_dir_relative_adress(from_loc, file_name)
         if not os.path.exists(same_dir):
-            os.mkdir(same_dir)
+            os.makedirs(same_dir)
         return same_dir
+        
+        
+    @staticmethod
+    def parent_dir_relative_adress(folder, file):
+        _file = file.split('/')[:-1]
+        _folder = folder.split('/')
+        relative_addres = '/'.join([name for name in _file if name not in _folder])
+        return relative_addres
 
     def copy_code_fragment(self, file_loc: str, storing_loc: str, start, end):
-        """
-
-        :param file_loc:
-        :param file_dest:
-        :param start_line:
-        :param end_line:
-        :return:
-        """
         start_line, start_col = start
         end_line, end_col = end
         with open(file_loc, 'r') as source_file:
@@ -101,7 +87,7 @@ class PrettyPrinter(object):
 
     def split_to_codeblocks_file(self, file_loc, new_loc):
         parser = Parser()
-        language = Language('../build/my-languages.so', self._language.replace('-', '_'))
+        language = Language(tsjava.language())
         parser.set_language(language)
         with open(file_loc, "rb") as f:
             content = f.read()
@@ -111,10 +97,11 @@ class PrettyPrinter(object):
         root_node = self.tree.root_node
         self.finding_blocks(root_node, storing_loc, file_loc)
 
-    def split_to_codeblocks_codebase(self):
-        os.mkdir(self._codeblocks_loc)
-        for file in glob.glob(self._without_type1_changes_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._codeblocks_loc + '/' + file.split('/')[-2]
+
+    def split_to_codeblocks_codebase(self, from_loc, to_loc):
+        os.mkdir(to_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self.handling_file_storage(from_loc, file, to_loc)
             if not os.path.exists(same_dir):
                 os.mkdir(same_dir)
             self.split_to_codeblocks_file(file, same_dir)
@@ -124,7 +111,7 @@ class PrettyPrinter(object):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self.handling_file_storage(file, dest_loc)
+            same_dir = self.handling_file_storage(from_loc, file, dest_loc)
             ob = Obfuscator(file, same_dir, self._language)
             ob.obfuscate()
         return True
@@ -256,12 +243,12 @@ class PrettyPrinterJava(PrettyPrinter):
         self._sep_and_glued_loc = self._pretty_codebase_loc + '/sep_and_glued'
         self._pretttty_loc = self._pretty_codebase_loc + '/pretty'
 
-    def remove_comments_codebase(self):
-        os.mkdir(self._without_comments_loc)
-        for file in glob.glob(self._codebase_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self._without_comments_loc + '/' + file.split('/')[-2]
+    def remove_comments_codebase(self, from_loc, to_loc):
+        os.mkdir(to_loc)
+        for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = self.handling_file_storage(from_loc, file, to_loc)
             if not os.path.exists(same_dir):
-                os.mkdir(same_dir)
+                os.makedirs(same_dir)
             cr = CommentRemover(file, same_dir, self._language)
             cr.remove_comments()
         return True
@@ -270,7 +257,7 @@ class PrettyPrinterJava(PrettyPrinter):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self.handling_file_storage(file, dest_loc)
+            same_dir = self.handling_file_storage(from_loc, file, dest_loc)
             self.glue_gaps_file(file, same_dir, line_sep_ch, tok_sep_ch)
         return True
 
@@ -278,7 +265,7 @@ class PrettyPrinterJava(PrettyPrinter):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self.handling_file_storage(file, dest_loc)
+            same_dir = self.handling_file_storage(from_loc, file, dest_loc)
             self.glue_ends_file(file, same_dir, line_sep_ch)
         return True
 
@@ -286,7 +273,7 @@ class PrettyPrinterJava(PrettyPrinter):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self.handling_file_storage(file, dest_loc)
+            same_dir = self.handling_file_storage(from_loc, file, dest_loc)
             si = SpaceInserter(file, same_dir, self._language)
             si.insert_spaces()
         return True
@@ -295,15 +282,15 @@ class PrettyPrinterJava(PrettyPrinter):
         if not os.path.exists(dest_loc):
             os.mkdir(dest_loc)
         for file in glob.glob(from_loc + "/**/*" + self._lang_ext, recursive=True):
-            same_dir = self.handling_file_storage(file, dest_loc)
+            same_dir = self.handling_file_storage(from_loc, file, dest_loc)
             sp = NewlineInserter(file, same_dir, self._language)
             sp.insert_new_lines()
         return True
 
     def pretty_print(self):
-        if self.remove_comments_codebase():
+        if self.remove_comments_codebase(self._codebase_loc, self._without_comments_loc):
             print_with_time("Removed comments")
-        if self.split_to_codeblocks_codebase():
+        if self.split_to_codeblocks_codebase(self._without_comments_loc, self._codeblocks_loc):
             print_with_time("Splitted to codeblocks")
         if self.glue_gaps_codebase(self._codeblocks_loc, self._obfuscated_loc, ' '):
             print_with_time("Written to one line")
@@ -319,3 +306,12 @@ class PrettyPrinterJava(PrettyPrinter):
             print_with_time("Styled again")
 
 
+    def codebase_to_bcb_format(self, bcb_format_loc):
+        os.mkdir(bcb_format_loc)
+        for file in glob.glob(self._codebase_loc + "/**/*" + self._lang_ext, recursive=True):
+            same_dir = bcb_format_loc + '/' + file.split('/')[-2]
+            if not os.path.exists(same_dir):
+                os.mkdir(same_dir)
+            cr = CommentRemover(file, same_dir, self._language)
+            cr.remove_comments()
+        return True

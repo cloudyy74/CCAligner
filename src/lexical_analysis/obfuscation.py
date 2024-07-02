@@ -1,4 +1,6 @@
 from tree_sitter import Language, Parser
+import tree_sitter_java as tsjava
+
 
 
 class Obfuscator:
@@ -54,7 +56,7 @@ class Obfuscator:
 
     def obfuscate(self):
         parser = Parser()
-        language = Language('../build/my-languages.so', self.language.replace('-', '_'))
+        language = Language(tsjava.language())
         parser.set_language(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()
