@@ -41,7 +41,7 @@ class CCalignerAlgorithm:
 
     def process_hash_gram(self, k, file):
         """
-        we call this function after collecting all of grams in particular window
+        we call this function after collecting of all q-e-grams in particular window
         :param file:
         :param k: is a given hash of q-e-gram in file.
         :return:
