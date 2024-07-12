@@ -29,8 +29,9 @@ class CCalignerAlgorithm:
             self.files.append(file)
         self.cand_map = dict()  # for hash of q-e-grams stores dict of blocks, and for each block stores number that
         # this hash gram has occurred
-        self.lines_in = dict()  # for code block stores number of lines
-        self.hash_set = dict()
+        self.lines_in = dict()  # for codeblock stores number of lines
+        self.hash_set = dict()  # for codeblock stores set with hash of q-e-gram and i -- number of sliding window in
+        # which this gram occurred
         self.cand_pair = dict()  # we store in cand_pair pairs of fragments as keys, and values are cardinality of
         # hashes_intersection
         self.cand_pair_list = list()
