@@ -5,6 +5,14 @@ from itertools import combinations
 from typing import List, Any
 
 import mmh3
+import json
+
+
+class SetEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def print_with_time(message, to='log_4'):
@@ -54,10 +62,6 @@ class CCalignerAlgorithm:
             self.cand_map[k][file] = 1
         else:
             self.cand_map[k][file] += 1
-
-
-
-
 
     def index_codeblock(self, file):
         with open(file, 'r') as f:
@@ -159,6 +163,20 @@ class CCalignerAlgorithm:
         else:
             return ((not self.are_fragments_nested(pair[0], pair[1])) and
                     self.are_fragments_from_different_codebases(pair[0], pair[1]))
+
+    def index_codebase(self, name_of_index_file):
+        """
+        index and writes codebase in indexed form in json
+        :return:
+        """
+        for file in self.files:
+            self.index_codeblock(file)
+
+        json_index = json.dumps(self.hash_set, indent=4, cls=SetEncoder)
+        with open(name_of_index_file, 'w+') as outfile:
+            outfile.write(json_index)
+
+
 
     def run_algo(self):
         for file in self.files:
