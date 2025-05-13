@@ -5,6 +5,9 @@ This repo contains an implementation of modified CCAligner algorithm on Python, 
 
 You should have mmh3, numpy, pandas installed.
 
+```
+$ pip install -r requirements.txt
+```
 
 Example:
 

@@ -7,12 +7,13 @@ from subprocess import run
 
 from tree_sitter import Language, Parser
 import tree_sitter_java as tsjava
-
+import tree_sitter_python as tspython
 
 from lexical_analysis.comment_remover import CommentRemover
 from lexical_analysis.obfuscation import Obfuscator
 from lexical_analysis.space_inserter_between_tokens import SpaceInserter
 from lexical_analysis.statements_separator import NewlineInserter
+from lexical_analysis.pretty_printer_py import PrettyPrinterPython
 
 AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
 
@@ -87,7 +88,10 @@ class PrettyPrinter(object):
 
     def split_to_codeblocks_file(self, file_loc, new_loc):
         parser = Parser()
-        language = Language(tsjava.language())
+        if self._language == "java":
+            language = Language(tsjava.language())
+        else:
+            language = Language(tspython.language())
         parser.set_language(language)
         with open(file_loc, "rb") as f:
             content = f.read()
@@ -212,14 +216,10 @@ class PrettyPrinterPy(PrettyPrinter):
         return status == 0
 
     def pretty_print(self):
-        if self.to_pep8_and_copy_codebase():
-            print("Brought into proper style")
-        if self.remove_type1_changes_in_codebase_py():
-            print("Removed type 1 changes")
-        if self.split_to_codeblocks_codebase():
+        if self.split_to_codeblocks_codebase(self._codebase_loc, self._codeblocks_loc):
             print("Split to codeblocks")
-        if self.obfuscate_codebase():
-            print("Obfuscated")
+        PrettyPrinterPython(self._codeblocks_loc, self._obfuscated_loc).pretty_print()
+        print("Pretty Printed")
 
 
 def print_with_time(message, to='log_4'):
