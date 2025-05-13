@@ -60,7 +60,7 @@ class PrettyPrinterPython:
         out: List[str] = []
         self._dfs(tree.root_node, out, 0)
         final = "\n".join(line for line in "".join(out).splitlines() if line.strip())
-        return final + "\n"
+        return final
 
     def _dfs(self, node, out: List[str], indent: int) -> None:
         t = node.type

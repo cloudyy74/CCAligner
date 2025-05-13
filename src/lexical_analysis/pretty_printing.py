@@ -15,10 +15,6 @@ from lexical_analysis.space_inserter_between_tokens import SpaceInserter
 from lexical_analysis.statements_separator import NewlineInserter
 from lexical_analysis.pretty_printer_py import PrettyPrinterPython
 
-AUTOPEP8_LOC = '/home/lokiplot/.local/bin/autopep8'
-
-
-
 
 class PrettyPrinter(object):
     def __init__(self, codebase_loc: str, pretty_loc: str, language):
@@ -154,66 +150,6 @@ class PrettyPrinterPy(PrettyPrinter):
     def __init__(self, codebase_loc: str, pretty_loc: str, language: str):
         super().__init__(codebase_loc, pretty_loc, language)
         self._lang_ext = '.py'
-
-        self._pep8_loc = self._pretty_codebase_loc + "/pep8"
-
-    @staticmethod
-    def remove_type1_changes_file_py(file_loc, new_loc):
-        new_file_name = new_loc + '/' + file_loc.split('/')[-1]  # can create collision
-        new_file_content = list()
-        prev_token_type = tokenize.INDENT
-        last_lineno = -1
-        last_col = 0
-        line = ""
-        with open(file_loc, 'r') as f:
-            tokens = tokenize.generate_tokens(f.readline)
-            for token in tokens:
-                token_type = token[0]
-                token_string = token[1]
-                start_line, start_col = token[2]
-                end_line, end_col = token[3]
-                if start_line > last_lineno:
-                    if line.strip() != "":
-                        new_file_content.append(line)
-                    line = ""
-                    last_col = 0
-                if start_col > last_col:
-                    line += (" " * (start_col - last_col))
-                if token_type == tokenize.COMMENT:
-                    pass
-                elif token_type == tokenize.STRING or token_type == tokenize.NUMBER:
-                    if prev_token_type not in [tokenize.INDENT, tokenize.NEWLINE]:
-                        if start_col > 0:
-                            line += token_string
-                else:
-                    line += token_string
-                prev_token_type = token_type
-                last_col = end_col
-                last_lineno = end_line
-
-        # TODO: обработать правильно переносы строки () и expressions, которые ничего не делают
-
-        nf = open(new_file_name, 'w')
-        nf.write(''.join(new_file_content))
-        nf.close()
-
-    def remove_type1_changes_in_codebase_py(self):
-        os.mkdir(self._without_type1_changes_loc)
-        for file in glob.glob(self._pep8_loc + "/**/*" + self._lang_ext, recursive=True):
-            self.remove_type1_changes_file_py(file, self._without_type1_changes_loc)
-        return True
-
-    def to_pep8_and_copy_codebase(self) -> bool:
-        """
-        copies original codebase to new directory (creates new_loc dir) and transforms it to pep8
-        respects codebase_dir structure
-        :param self:
-        :return: True if command was successful
-        """
-        copytree(self._codebase_loc, self._pep8_loc)
-        command_to_pep8 = f'{AUTOPEP8_LOC} {self._pep8_loc} --recursive --in-place --pep8-passes 2000 --verbose'
-        status = run(command_to_pep8, shell=True, capture_output=True, text=True).returncode
-        return status == 0
 
     def pretty_print(self):
         if self.split_to_codeblocks_codebase(self._codebase_loc, self._codeblocks_loc):
