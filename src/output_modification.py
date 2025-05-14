@@ -37,7 +37,7 @@ def to_benchmark_format(fragment_name, lang_ext):
 
 
 def to_usual_format(codebase_loc, final_dir, fragment_name, lang_ext):
-    file_name = codebase_loc + '/' + PrettyPrinter.parent_dir_relative_adress(final_dir, fragment_name) + lang_ext
+    file_name = codebase_loc + '/' + PrettyPrinter.parent_dir_relative_address(final_dir, fragment_name) + lang_ext
     start, end = fragment_name.split('/')[-1][:-len(lang_ext)].split('_')
     return [file_name, start, end]
 

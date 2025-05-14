@@ -1,9 +1,6 @@
 import glob
 import os
 import time
-import tokenize
-from shutil import copytree
-from subprocess import run
 
 from tree_sitter import Language, Parser
 import tree_sitter_java as tsjava
@@ -34,18 +31,18 @@ class PrettyPrinter(object):
 
     @staticmethod
     def handling_file_storage(from_loc, file_name, dest_loc):
-        same_dir = dest_loc + '/' + PrettyPrinter.parent_dir_relative_adress(from_loc, file_name)
+        same_dir = dest_loc + '/' + PrettyPrinter.parent_dir_relative_address(from_loc, file_name)
         if not os.path.exists(same_dir):
             os.makedirs(same_dir)
         return same_dir
         
         
     @staticmethod
-    def parent_dir_relative_adress(folder, file):
+    def parent_dir_relative_address(folder, file):
         _file = file.split('/')[:-1]
         _folder = folder.split('/')
-        relative_addres = '/'.join([name for name in _file if name not in _folder])
-        return relative_addres
+        relative_address = '/'.join([name for name in _file if name not in _folder])
+        return relative_address
 
     def copy_code_fragment(self, file_loc: str, storing_loc: str, start, end):
         start_line, start_col = start
@@ -83,12 +80,11 @@ class PrettyPrinter(object):
             self.finding_blocks(child, storing_loc, file_loc)
 
     def split_to_codeblocks_file(self, file_loc, new_loc):
-        parser = Parser()
         if self._language == "java":
             language = Language(tsjava.language())
         else:
             language = Language(tspython.language())
-        parser.set_language(language)
+        parser = Parser(language)
         with open(file_loc, "rb") as f:
             content = f.read()
         self.tree = parser.parse(content)
