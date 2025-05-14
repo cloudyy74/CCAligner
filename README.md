@@ -11,7 +11,10 @@ $ pip install -r requirements.txt
 
 Example:
 
-``python3 ./src/ccaligner.py -from ./data/original_codebases/paper_example -l java -theta 60 ``
+```
+$ python3 ./src/ccaligner.py -from ./data/original_codebases/paper_example -l java -theta 60
+$ python3 ./src/ccaligner.py -from ./data/original_codebases/codebase1 -l python -theta 60
+```
 
 ## Modification
 
