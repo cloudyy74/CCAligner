@@ -1,0 +1,8 @@
+services:
+  ccaligner:
+    build: .
+    volumes:
+      - ./data:/usr/src/app/data
+      - ./clones.csv:/usr/src/app/clones.csv
+      - ./log_4:/usr/src/app/log_4
+
