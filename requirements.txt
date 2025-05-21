@@ -4,3 +4,4 @@ tree-sitter-python==0.21.0
 numpy
 pandas
 mmh3
+pytest
