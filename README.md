@@ -23,6 +23,8 @@ $ docker compose run --rm ccaligner -from ./data/original_codebases/paper_exampl
 $ docker compose run --rm ccaligner -from ./data/original_codebases/codebase1 -l python -theta 60
 ```
 
+Also this repo contains google code jam dataset parser in ./data/original_codebases/gcj
+
 ## Modification
 
 It is not exactly an implementation of CCAligner, this tool contains a number of modifications and heuristics:
