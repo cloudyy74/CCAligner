@@ -24,8 +24,8 @@ class PrettyPrinter(object):
 
         self._codebase_loc = codebase_loc
         self._pretty_codebase_loc = pretty_loc + self._codebase_loc.split('/')[-1]
-        os.mkdir(pretty_loc)
-        os.mkdir(self._pretty_codebase_loc)
+        os.makedirs(pretty_loc, exist_ok=True)
+        os.makedirs(self._pretty_codebase_loc, exist_ok=True)
         print_with_time("init from base_class")
         self._codeblocks_loc = self._pretty_codebase_loc + "/codeblocks"
         self._obfuscated_loc = self._pretty_codebase_loc + "/obfuscated"
@@ -162,7 +162,7 @@ class PrettyPrinterPy(PrettyPrinter):
     def __init__(self, codebase_loc: str, pretty_loc: str, language: str):
         super().__init__(codebase_loc, pretty_loc, language)
         self._lang_ext = '.py'
-        self.src_root = Path(self.codebase_loc).resolve()
+        self.src_root = Path(self._codebase_loc).resolve()
         self.dst_root = Path(self._obfuscated_loc).resolve()
         self.parser = Parser(PY_LANGUAGE)
         self._skip_indent_depth: int | None = None
@@ -273,10 +273,10 @@ class PrettyPrinterPy(PrettyPrinter):
         if t in self._LINE_END_NODES | {"function_definition", "class_definition"}:
             out.append("\n")
 
-
     def pretty_print(self):
         if self.split_to_codeblocks_codebase(self._codebase_loc, self._codeblocks_loc):
             print_with_time("Split to codeblocks")
+        self.src_root = Path(self._codeblocks_loc).resolve()
         if self.run():
             print_with_time("Pretty Printed")
 
