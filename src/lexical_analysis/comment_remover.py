@@ -2,7 +2,6 @@ import tree_sitter_java as tsjava
 
 from tree_sitter import Language, Parser
 
-
 class CommentRemover:
     def __init__(self, file_loc, file_dest, language):
         self.language = language
@@ -38,9 +37,8 @@ class CommentRemover:
             self.dfs(child)
 
     def remove_comments(self):
-        parser = Parser()
         language = Language(tsjava.language())
-        parser.set_language(language)
+        parser = Parser(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()
         with open(self.file_loc, 'r', encoding='latin-1') as f:

@@ -14,9 +14,8 @@ class SpaceInserter:
         self.old_lines = None
 
     def insert_spaces(self):
-        parser = Parser()
         language = Language(tsjava.language())
-        parser.set_language(language)
+        parser = Parser(language)
         with open(self.file_loc, 'rb') as f:
             content = f.read()
         with open(self.file_loc, 'r') as f:
